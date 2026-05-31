@@ -1,0 +1,1738 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI图片生成设置</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #1a1a1a;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        .settings-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .settings-header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        
+        .settings-header h1 {
+            margin: 0 0 10px 0;
+            color: #ffffff;
+            font-size: 2.2em;
+            font-weight: 600;
+        }
+        
+        .settings-header p {
+            margin: 0;
+            color: #cccccc;
+            font-size: 1em;
+        }
+        
+        .settings-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 25px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 15px 20px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 600;
+            color: #cccccc;
+        }
+        
+        .tab-button.active {
+            background: #404040;
+            color: #ffffff;
+        }
+        
+        .tab-button:hover {
+            background: #353535;
+            color: #ffffff;
+        }
+        
+        .settings-content {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 30px;
+            border: 1px solid #333;
+        }
+        
+        .tab-panel {
+            display: none;
+        }
+        
+        .tab-panel.active {
+            display: block;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #404040;
+        }
+        
+        .form-section:last-child {
+            border-bottom: none;
+        }
+        
+        .form-section h3 {
+            color: #ffffff;
+            margin: 0 0 20px 0;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #ffffff;
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #404040;
+            border-radius: 6px;
+            font-size: 14px;
+            background: #1a1a1a;
+            color: #ffffff;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #666666;
+        }
+        
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .form-group input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            margin-right: 10px;
+            accent-color: #666666;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            border: 1px solid #404040;
+        }
+        
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 400;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .help-text {
+            font-size: 12px;
+            color: #999999;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-online {
+            background: #4ade80;
+        }
+        
+        .status-offline {
+            background: #ef4444;
+        }
+        
+        .status-unknown {
+            background: #fbbf24;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid #404040;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+        
+        .btn-primary {
+            background: #404040;
+            color: #ffffff;
+        }
+        
+        .btn-primary:hover {
+            background: #4a4a4a;
+        }
+        
+        .btn-secondary {
+            background: #555555;
+            color: #ffffff;
+        }
+        
+        .btn-secondary:hover {
+            background: #666666;
+        }
+        
+        .btn-warning {
+            background: #d97706;
+            color: #ffffff;
+        }
+        
+        .btn-warning:hover {
+            background: #ea580c;
+        }
+        
+        .btn-success {
+            background: #16a34a;
+            color: #ffffff;
+        }
+        
+        .btn-success:hover {
+            background: #15803d;
+        }
+        
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            display: none;
+            border: 1px solid;
+        }
+        
+        .alert-success {
+            background: #1a2e1a;
+            color: #4ade80;
+            border-color: #16a34a;
+        }
+        
+        .alert-error {
+            background: #2e1a1a;
+            color: #f87171;
+            border-color: #dc2626;
+        }
+        
+        .alert-warning {
+            background: #2e2a1a;
+            color: #fbbf24;
+            border-color: #d97706;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        
+        .spinner {
+            border: 3px solid #404040;
+            border-top: 3px solid #ffffff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .settings-container {
+                padding: 15px;
+            }
+            
+            .settings-header {
+                padding: 20px;
+            }
+            
+            .settings-header h1 {
+                font-size: 1.8em;
+            }
+            
+            .settings-content {
+                padding: 20px;
+            }
+            
+            .form-section {
+                padding-bottom: 20px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+        
+        /* 历史图像样式 */
+        .history-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        
+        .history-info {
+            margin-left: auto;
+            color: #cccccc;
+            font-size: 14px;
+        }
+        
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        
+        .image-item {
+            position: relative;
+            background: #2a2a2a;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #404040;
+            transition: all 0.3s ease;
+        }
+        
+        .image-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border-color: #555;
+        }
+        
+        .image-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        
+        .image-info {
+            padding: 10px;
+            font-size: 12px;
+            color: #cccccc;
+        }
+        
+        .image-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            word-break: break-all;
+        }
+        
+        .image-size {
+            color: #999;
+        }
+        
+        .image-actions {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: flex;
+            gap: 5px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .image-item:hover .image-actions {
+            opacity: 1;
+        }
+        
+        .action-btn {
+            background: rgba(0,0,0,0.7);
+            border: none;
+            color: white;
+            padding: 5px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            background: rgba(0,0,0,0.9);
+        }
+        
+        .action-btn.delete {
+            background: rgba(220,53,69,0.8);
+        }
+        
+        .action-btn.delete:hover {
+            background: rgba(220,53,69,1);
+        }
+        
+        .loading-placeholder {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .spinner-small {
+            border: 2px solid #404040;
+            border-top: 2px solid #ffffff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        .empty-placeholder {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .empty-placeholder h4 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+        
+        .empty-placeholder p {
+            margin: 0;
+            font-size: 14px;
+        }
+        
+        /* 图像预览模态框 */
+        .image-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+        }
+        
+        .image-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+        }
+        
+        .modal-content img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        /* 工作流选择器样式 */
+        .workflow-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .workflow-selector select {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .workflow-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            border: 1px solid #404040;
+        }
+        
+        .workflow-details h4 {
+            margin: 0 0 15px 0;
+            color: #ffffff;
+            font-size: 1.1em;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #2a2a2a;
+            border-radius: 4px;
+            border: 1px solid #333;
+        }
+        
+        .info-label {
+            font-weight: 500;
+            color: #cccccc;
+        }
+        
+        .info-value {
+            color: #ffffff;
+            font-weight: 600;
+        }
+        
+        .info-value.success {
+            color: #4ade80;
+        }
+        
+        .info-value.warning {
+            color: #fbbf24;
+        }
+        
+        .info-value.error {
+            color: #f87171;
+        }
+        
+        /* 工作流上传模态框 */
+        .upload-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+        }
+        
+        .upload-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .upload-modal-content {
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .upload-modal h3 {
+            margin: 0 0 20px 0;
+            color: #ffffff;
+            text-align: center;
+        }
+        
+        .upload-zone {
+            border: 2px dashed #555;
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            background: #1a1a1a;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            border-color: #888;
+            background: #252525;
+        }
+        
+        .upload-zone.dragover {
+            background: #2a4a2a;
+            border-color: #4ade80;
+        }
+        
+        .upload-zone p {
+            margin: 0 0 10px 0;
+            color: #cccccc;
+            font-size: 16px;
+        }
+        
+        .upload-zone .upload-hint {
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .upload-progress {
+            display: none;
+            margin-top: 15px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            color: #cccccc;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .history-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                max-height: 400px;
+            }
+            
+            .history-controls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            
+            .history-info {
+                margin-left: 0;
+                text-align: center;
+            }
+            
+            .workflow-selector {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .workflow-selector select {
+                min-width: unset;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .upload-modal-content {
+                padding: 20px;
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <div class="settings-header">
+            <h1>🎨 AI图片生成设置</h1>
+            <p>配置AI绘画的生成参数和相关设置</p>
+        </div>
+        
+        <div class="alert alert-success" id="success-alert">
+            <strong>成功！</strong> <span id="success-message"></span>
+        </div>
+        
+        <div class="alert alert-error" id="error-alert">
+            <strong>错误！</strong> <span id="error-message"></span>
+        </div>
+        
+        <div class="alert alert-warning" id="warning-alert">
+            <strong>警告！</strong> <span id="warning-message"></span>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>正在加载设置...</p>
+        </div>
+        
+        <div class="settings-tabs">
+            <button class="tab-button active" onclick="showTab('generation')">🎨 生成参数</button>
+            <button class="tab-button" onclick="showTab('prompt')">📝 提示词设置</button>
+            <button class="tab-button" onclick="showTab('comfyui')">⚙️ ComfyUI设置</button>
+            <button class="tab-button" onclick="showTab('ui')">🖥️ 界面设置</button>
+            <button class="tab-button" onclick="showTab('history')">📸 历史图像</button>
+        </div>
+        
+        <div class="settings-content">
+            <!-- 生成参数标签页 -->
+            <div id="generation-tab" class="tab-panel active">
+                <div class="form-section">
+                    <h3>图片尺寸</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="width">宽度 (像素)</label>
+                            <input type="number" id="width" min="64" max="2048" step="64">
+                            <div class="help-text">建议使用64的倍数，如512、768、1024</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="height">高度 (像素)</label>
+                            <input type="number" id="height" min="64" max="2048" step="64">
+                            <div class="help-text">建议使用64的倍数，如512、768、1024</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>生成质量</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="steps">采样步数</label>
+                            <input type="number" id="steps" min="1" max="100">
+                            <div class="help-text">更高的步数通常产生更好的质量，但需要更多时间</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="cfg">CFG值</label>
+                            <input type="number" id="cfg" min="1" max="20" step="0.5">
+                            <div class="help-text">控制AI对提示词的遵循程度，建议7-12</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="negative_prompt">负面提示词</label>
+                        <textarea id="negative_prompt" placeholder="描述不想在图片中出现的内容"></textarea>
+                        <div class="help-text">用于排除不想要的元素，如"low quality, blurry"</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="batch_size">批次大小</label>
+                        <input type="number" id="batch_size" min="1" max="8">
+                        <div class="help-text">一次生成的图片数量，数量越多需要的时间越长</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 提示词设置标签页 -->
+            <div id="prompt-tab" class="tab-panel">
+                <div class="form-section">
+                    <h3>风格设置</h3>
+                    <div class="form-group">
+                        <label for="style_prefix">风格前缀</label>
+                        <input type="text" id="style_prefix" placeholder="例如: masterpiece, best quality">
+                        <div class="help-text">在生成的提示词前添加的固定内容</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="style_suffix">风格后缀</label>
+                        <input type="text" id="style_suffix" placeholder="例如: high quality, detailed">
+                        <div class="help-text">在生成的提示词后添加的固定内容</div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>质量关键词</h3>
+                    <div class="form-group">
+                        <label for="quality_keywords">质量关键词 (每行一个)</label>
+                        <textarea id="quality_keywords" placeholder="detailed face&#10;expressive eyes&#10;soft lighting"></textarea>
+                        <div class="help-text">自动添加到提示词中的质量相关关键词</div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>自动化设置</h3>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="enable_auto_negative">
+                        <label for="enable_auto_negative">启用自动负面提示词</label>
+                    </div>
+                    <div class="help-text">自动添加常用的负面提示词来提高图片质量</div>
+                </div>
+            </div>
+            
+            <!-- ComfyUI设置标签页 -->
+            <div id="comfyui-tab" class="tab-panel">
+                <div class="form-section">
+                    <h3>服务器连接</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="server_address">服务器地址</label>
+                            <input type="text" id="server_address" placeholder="127.0.0.1:8188">
+                            <div class="help-text">ComfyUI服务器的地址和端口</div>
+                        </div>
+                        <div class="form-group">
+                            <label>连接状态</label>
+                            <div>
+                                <span class="status-indicator status-unknown" id="connection-status"></span>
+                                <span id="connection-text">未测试</span>
+                                <button type="button" class="btn btn-secondary" onclick="testConnection()" style="margin-left: 10px;">测试连接</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>工作流设置</h3>
+                    <div class="form-group">
+                        <label for="workflow_file">工作流文件</label>
+                        <div class="workflow-selector">
+                            <select id="workflow_file" onchange="onWorkflowChange()">
+                                <option value="">选择工作流文件...</option>
+                            </select>
+                            <button type="button" class="btn btn-secondary" onclick="refreshWorkflows()" style="margin-left: 10px;">🔄 刷新</button>
+                            <button type="button" class="btn btn-secondary" onclick="showWorkflowUpload()" style="margin-left: 5px;">📁 上传</button>
+                        </div>
+                        <div class="help-text">选择ComfyUI工作流文件或上传新的工作流</div>
+                        
+                        <!-- 工作流信息显示 -->
+                        <div id="workflow-info" class="workflow-info" style="display: none;">
+                            <div class="workflow-details">
+                                <h4>工作流信息</h4>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <span class="info-label">节点数量:</span>
+                                        <span id="workflow-node-count">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">分辨率:</span>
+                                        <span id="workflow-resolution">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">包含采样器:</span>
+                                        <span id="workflow-has-sampler">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">包含模型加载:</span>
+                                        <span id="workflow-has-model">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="timeout">超时时间 (秒)</label>
+                        <input type="number" id="timeout" min="30" max="600">
+                        <div class="help-text">图片生成的最大等待时间</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 界面设置标签页 -->
+            <div id="ui-tab" class="tab-panel">
+                <div class="form-section">
+                    <h3>显示选项</h3>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="show_prompt">
+                        <label for="show_prompt">显示生成的提示词</label>
+                    </div>
+                    <div class="help-text">在聊天中显示AI生成的英文提示词</div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="show_generation_info">
+                        <label for="show_generation_info">显示生成信息</label>
+                    </div>
+                    <div class="help-text">显示图片尺寸、步数等生成参数信息</div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="auto_open_image">
+                        <label for="auto_open_image">自动打开图片</label>
+                    </div>
+                    <div class="help-text">生成完成后自动在新窗口中打开图片</div>
+                </div>
+            </div>
+            
+            <!-- 历史图像标签页 -->
+            <div id="history-tab" class="tab-panel">
+                <div class="form-section">
+                    <h3>历史图像</h3>
+                    <div class="history-controls">
+                        <button type="button" class="btn btn-primary" onclick="loadHistoryImages()">🔄 刷新</button>
+                        <button type="button" class="btn btn-danger" onclick="clearAllImages()">🗑️ 清空所有</button>
+                        <span class="history-info">
+                            <span id="image-count">0</span> 张图像
+                            <span id="total-size">0 MB</span>
+                        </span>
+                    </div>
+                    
+                    <div class="history-grid" id="history-grid">
+                        <div class="loading-placeholder">
+                            <div class="spinner-small"></div>
+                            <p>正在加载历史图像...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button type="button" class="btn btn-success" onclick="testConnection()">🔗 测试连接</button>
+                <button type="button" class="btn btn-primary" onclick="saveSettings()">💾 保存设置</button>
+                <button type="button" class="btn btn-warning" onclick="resetSettings()">🔄 重置为默认</button>
+                <button type="button" class="btn btn-secondary" onclick="window.close()">❌ 关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSettings = {};
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+            loadWorkflows();
+            setupUploadHandlers();
+        });
+        
+        // 显示标签页
+        function showTab(tabName) {
+            // 隐藏所有标签页
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            
+            // 移除所有按钮的active类
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // 显示选中的标签页
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        // 加载设置
+        async function loadSettings() {
+            showLoading(true);
+            
+            try {
+                const response = await fetch('/api/image-settings');
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentSettings = data.settings;
+                    populateForm(data.settings);
+                    showAlert('success', '设置加载成功');
+                } else {
+                    showAlert('error', '加载设置失败: ' + data.error);
+                }
+            } catch (error) {
+                console.error('加载设置失败:', error);
+                showAlert('error', '加载设置失败: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // 填充表单
+        function populateForm(settings) {
+            // 生成参数
+            const genParams = settings.generation_params || {};
+            document.getElementById('width').value = genParams.width || 768;
+            document.getElementById('height').value = genParams.height || 768;
+            document.getElementById('steps').value = genParams.steps || 25;
+            document.getElementById('cfg').value = genParams.cfg || 7.5;
+            document.getElementById('negative_prompt').value = genParams.negative_prompt || '';
+            document.getElementById('batch_size').value = genParams.batch_size || 1;
+            
+            // 提示词设置
+            const promptSettings = settings.prompt_settings || {};
+            document.getElementById('style_prefix').value = promptSettings.style_prefix || '';
+            document.getElementById('style_suffix').value = promptSettings.style_suffix || '';
+            document.getElementById('quality_keywords').value = (promptSettings.quality_keywords || []).join('\n');
+            document.getElementById('enable_auto_negative').checked = promptSettings.enable_auto_negative || false;
+            
+            // ComfyUI设置
+            const comfyuiSettings = settings.comfyui_settings || {};
+            document.getElementById('server_address').value = comfyuiSettings.server_address || '127.0.0.1:8188';
+            setWorkflowFile(comfyuiSettings.workflow_file || 'LL杰出.json');
+            document.getElementById('timeout').value = comfyuiSettings.timeout || 300;
+            
+            // UI设置
+            const uiSettings = settings.ui_settings || {};
+            document.getElementById('show_prompt').checked = uiSettings.show_prompt || false;
+            document.getElementById('show_generation_info').checked = uiSettings.show_generation_info || false;
+            document.getElementById('auto_open_image').checked = uiSettings.auto_open_image || false;
+        }
+        
+        // 收集表单数据
+        function collectFormData() {
+            return {
+                generation_params: {
+                    width: parseInt(document.getElementById('width').value),
+                    height: parseInt(document.getElementById('height').value),
+                    steps: parseInt(document.getElementById('steps').value),
+                    cfg: parseFloat(document.getElementById('cfg').value),
+                    negative_prompt: document.getElementById('negative_prompt').value,
+                    batch_size: parseInt(document.getElementById('batch_size').value)
+                },
+                prompt_settings: {
+                    style_prefix: document.getElementById('style_prefix').value,
+                    style_suffix: document.getElementById('style_suffix').value,
+                    quality_keywords: document.getElementById('quality_keywords').value.split('\n').filter(k => k.trim()),
+                    enable_auto_negative: document.getElementById('enable_auto_negative').checked
+                },
+                comfyui_settings: {
+                    server_address: document.getElementById('server_address').value,
+                    workflow_file: document.getElementById('workflow_file').value,
+                    timeout: parseInt(document.getElementById('timeout').value)
+                },
+                ui_settings: {
+                    show_prompt: document.getElementById('show_prompt').checked,
+                    show_generation_info: document.getElementById('show_generation_info').checked,
+                    auto_open_image: document.getElementById('auto_open_image').checked
+                }
+            };
+        }
+        
+        // 保存设置
+        async function saveSettings() {
+            const formData = collectFormData();
+            
+            showLoading(true);
+            
+            try {
+                const response = await fetch('/api/image-settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentSettings = formData;
+                    showAlert('success', data.message);
+                    
+                    if (data.warnings && data.warnings.length > 0) {
+                        showAlert('warning', '警告: ' + data.warnings.join(', '));
+                    }
+                } else {
+                    showAlert('error', '保存失败: ' + data.error);
+                    
+                    if (data.errors && data.errors.length > 0) {
+                        showAlert('error', '错误: ' + data.errors.join(', '));
+                    }
+                }
+            } catch (error) {
+                console.error('保存设置失败:', error);
+                showAlert('error', '保存设置失败: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // 重置设置
+        async function resetSettings() {
+            if (!confirm('确定要重置为默认设置吗？这将覆盖所有当前设置。')) {
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                const response = await fetch('/api/image-settings/reset', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentSettings = data.settings;
+                    populateForm(data.settings);
+                    showAlert('success', data.message);
+                } else {
+                    showAlert('error', '重置失败: ' + data.error);
+                }
+            } catch (error) {
+                console.error('重置设置失败:', error);
+                showAlert('error', '重置设置失败: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // 测试连接
+        async function testConnection() {
+            const statusIndicator = document.getElementById('connection-status');
+            const statusText = document.getElementById('connection-text');
+            
+            statusIndicator.className = 'status-indicator status-unknown';
+            statusText.textContent = '测试中...';
+            
+            try {
+                const response = await fetch('/api/image-settings/test-connection');
+                const data = await response.json();
+                
+                if (data.success && data.connection.success) {
+                    statusIndicator.className = 'status-indicator status-online';
+                    statusText.textContent = '连接正常';
+                    showAlert('success', data.connection.message);
+                } else {
+                    statusIndicator.className = 'status-indicator status-offline';
+                    statusText.textContent = '连接失败';
+                    const errorMsg = data.connection ? data.connection.error : data.error;
+                    showAlert('error', '连接测试失败: ' + errorMsg);
+                }
+            } catch (error) {
+                statusIndicator.className = 'status-indicator status-offline';
+                statusText.textContent = '连接错误';
+                showAlert('error', '连接测试失败: ' + error.message);
+            }
+        }
+        
+        // 显示提示信息
+        function showAlert(type, message) {
+            // 隐藏所有提示
+            document.querySelectorAll('.alert').forEach(alert => {
+                alert.style.display = 'none';
+            });
+            
+            // 显示指定类型的提示
+            const alertElement = document.getElementById(type + '-alert');
+            const messageElement = document.getElementById(type + '-message');
+            
+            if (alertElement && messageElement) {
+                messageElement.textContent = message;
+                alertElement.style.display = 'block';
+                
+                // 3秒后自动隐藏
+                setTimeout(() => {
+                    alertElement.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        // 显示/隐藏加载状态
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            const content = document.querySelector('.settings-content');
+            
+            if (show) {
+                loading.style.display = 'block';
+                content.style.opacity = '0.5';
+            } else {
+                loading.style.display = 'none';
+                content.style.opacity = '1';
+            }
+        }
+        
+        // 历史图像管理功能
+        let historyImages = [];
+        
+        // 加载历史图像
+        async function loadHistoryImages() {
+            const historyGrid = document.getElementById('history-grid');
+            const imageCount = document.getElementById('image-count');
+            const totalSize = document.getElementById('total-size');
+            
+            // 显示加载状态
+            historyGrid.innerHTML = `
+                <div class="loading-placeholder">
+                    <div class="spinner-small"></div>
+                    <p>正在加载历史图像...</p>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch('/api/history-images');
+                const data = await response.json();
+                
+                if (data.success) {
+                    historyImages = data.images;
+                    renderHistoryImages();
+                    
+                    // 更新统计信息
+                    imageCount.textContent = data.images.length;
+                    totalSize.textContent = (data.total_size / (1024 * 1024)).toFixed(1);
+                } else {
+                    showAlert('error', '加载历史图像失败: ' + data.error);
+                    historyGrid.innerHTML = `
+                        <div class="empty-placeholder">
+                            <h4>😕 加载失败</h4>
+                            <p>无法加载历史图像</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('加载历史图像失败:', error);
+                showAlert('error', '加载历史图像失败: ' + error.message);
+                historyGrid.innerHTML = `
+                    <div class="empty-placeholder">
+                        <h4>😕 加载失败</h4>
+                        <p>网络连接错误</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // 渲染历史图像
+        function renderHistoryImages() {
+            const historyGrid = document.getElementById('history-grid');
+            
+            if (historyImages.length === 0) {
+                historyGrid.innerHTML = `
+                    <div class="empty-placeholder">
+                        <h4>📸 暂无历史图像</h4>
+                        <p>生成图像后，它们将显示在这里</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const imagesHtml = historyImages.map(image => `
+                <div class="image-item" data-filename="${image.filename}">
+                    <img src="/comfyui/generated_images/${image.filename}" 
+                         alt="${image.role_name}" 
+                         onclick="previewImage('${image.filename}', '${image.role_name}')">
+                    <div class="image-actions">
+                        <button class="action-btn" onclick="downloadImage('${image.filename}')" title="下载">💾</button>
+                        <button class="action-btn delete" onclick="deleteImage('${image.filename}')" title="删除">🗑️</button>
+                    </div>
+                    <div class="image-info">
+                        <div class="image-name">${image.role_name}</div>
+                        <div class="image-size">${image.size_text} • ${image.date_text}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            historyGrid.innerHTML = imagesHtml;
+        }
+        
+        // 预览图像
+        function previewImage(filename, roleName) {
+            const modal = document.getElementById('image-modal');
+            const modalImg = document.getElementById('modal-image');
+            
+            modalImg.src = `/comfyui/generated_images/${filename}`;
+            modalImg.alt = roleName;
+            modal.classList.add('active');
+        }
+        
+        // 关闭预览
+        function closeImageModal() {
+            const modal = document.getElementById('image-modal');
+            modal.classList.remove('active');
+        }
+        
+        // 下载图像
+        function downloadImage(filename) {
+            const link = document.createElement('a');
+            link.href = `/comfyui/generated_images/${filename}`;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // 删除单个图像
+        async function deleteImage(filename) {
+            if (!confirm(`确定要删除图像 "${filename}" 吗？此操作不可恢复。`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/history-images/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ filename: filename })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('success', '图像删除成功');
+                    // 从列表中移除
+                    historyImages = historyImages.filter(img => img.filename !== filename);
+                    renderHistoryImages();
+                    
+                    // 更新统计信息
+                    const imageCount = document.getElementById('image-count');
+                    const totalSize = document.getElementById('total-size');
+                    imageCount.textContent = historyImages.length;
+                    
+                    const newTotalSize = historyImages.reduce((sum, img) => sum + img.size, 0);
+                    totalSize.textContent = (newTotalSize / (1024 * 1024)).toFixed(1);
+                } else {
+                    showAlert('error', '删除失败: ' + data.error);
+                }
+            } catch (error) {
+                console.error('删除图像失败:', error);
+                showAlert('error', '删除图像失败: ' + error.message);
+            }
+        }
+        
+        // 清空所有图像
+        async function clearAllImages() {
+            if (historyImages.length === 0) {
+                showAlert('warning', '没有图像可以清理');
+                return;
+            }
+            
+            const confirmText = `确定要删除所有 ${historyImages.length} 张历史图像吗？此操作不可恢复！`;
+            if (!confirm(confirmText)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/history-images/clear', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('success', `成功删除 ${data.deleted_count} 张图像`);
+                    historyImages = [];
+                    renderHistoryImages();
+                    
+                    // 重置统计信息
+                    document.getElementById('image-count').textContent = '0';
+                    document.getElementById('total-size').textContent = '0';
+                } else {
+                    showAlert('error', '清理失败: ' + data.error);
+                }
+            } catch (error) {
+                console.error('清理图像失败:', error);
+                showAlert('error', '清理图像失败: ' + error.message);
+            }
+        }
+        
+        // 切换到历史标签页时自动加载图像
+        const originalShowTab = showTab;
+        showTab = function(tabName) {
+            originalShowTab(tabName);
+            if (tabName === 'history') {
+                loadHistoryImages();
+            }
+        };
+        
+        // 点击模态框背景关闭
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('image-modal')) {
+                closeImageModal();
+            }
+            if (e.target.classList.contains('upload-modal')) {
+                closeUploadModal();
+            }
+        });
+        
+        // ====== 工作流管理功能 ======
+        let availableWorkflows = [];
+        
+        // 加载可用的工作流文件
+        async function loadWorkflows() {
+            try {
+                const response = await fetch('/api/workflow-files');
+                const data = await response.json();
+                
+                if (data.success) {
+                    availableWorkflows = data.workflows;
+                    populateWorkflowSelect();
+                } else {
+                    console.error('加载工作流失败:', data.error);
+                    showAlert('warning', '加载工作流列表失败: ' + data.error);
+                }
+            } catch (error) {
+                console.error('加载工作流失败:', error);
+                showAlert('warning', '加载工作流列表失败: ' + error.message);
+            }
+        }
+        
+        // 填充工作流选择器
+        function populateWorkflowSelect() {
+            const select = document.getElementById('workflow_file');
+            const currentValue = select.value;
+            
+            // 清空现有选项
+            select.innerHTML = '<option value="">选择工作流文件...</option>';
+            
+            // 添加工作流选项
+            availableWorkflows.forEach(workflow => {
+                const option = document.createElement('option');
+                option.value = workflow.filename;
+                option.textContent = `${workflow.name} (${workflow.size_text})`;
+                if (!workflow.is_valid) {
+                    option.textContent += ' ⚠️';
+                    option.style.color = '#fbbf24';
+                }
+                select.appendChild(option);
+            });
+            
+            // 恢复之前的选择
+            if (currentValue) {
+                select.value = currentValue;
+            }
+        }
+        
+        // 设置工作流文件值
+        function setWorkflowFile(filename) {
+            const select = document.getElementById('workflow_file');
+            select.value = filename;
+            onWorkflowChange();
+        }
+        
+        // 工作流选择改变时的处理
+        async function onWorkflowChange() {
+            const select = document.getElementById('workflow_file');
+            const filename = select.value;
+            const workflowInfo = document.getElementById('workflow-info');
+            
+            if (!filename) {
+                workflowInfo.style.display = 'none';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/workflow-files/${encodeURIComponent(filename)}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayWorkflowInfo(data.workflow);
+                } else {
+                    workflowInfo.style.display = 'none';
+                    showAlert('warning', '获取工作流信息失败: ' + data.error);
+                }
+            } catch (error) {
+                workflowInfo.style.display = 'none';
+                console.error('获取工作流信息失败:', error);
+            }
+        }
+        
+        // 显示工作流信息
+        function displayWorkflowInfo(workflow) {
+            const workflowInfo = document.getElementById('workflow-info');
+            const info = workflow.info;
+            
+            document.getElementById('workflow-node-count').textContent = workflow.node_count;
+            document.getElementById('workflow-resolution').textContent = info.resolution || '未知';
+            
+            // 设置状态指示器
+            const samplerElement = document.getElementById('workflow-has-sampler');
+            samplerElement.textContent = info.has_sampler ? '✅ 是' : '❌ 否';
+            samplerElement.className = info.has_sampler ? 'info-value success' : 'info-value error';
+            
+            const modelElement = document.getElementById('workflow-has-model');
+            modelElement.textContent = info.has_model_loader ? '✅ 是' : '❌ 否';
+            modelElement.className = info.has_model_loader ? 'info-value success' : 'info-value error';
+            
+            workflowInfo.style.display = 'block';
+        }
+        
+        // 刷新工作流列表
+        async function refreshWorkflows() {
+            showAlert('success', '正在刷新工作流列表...');
+            await loadWorkflows();
+            showAlert('success', '工作流列表已刷新');
+        }
+        
+        // 显示上传模态框
+        function showWorkflowUpload() {
+            const modal = document.getElementById('upload-modal');
+            modal.classList.add('active');
+            
+            // 重置上传状态
+            resetUploadState();
+        }
+        
+        // 关闭上传模态框
+        function closeUploadModal() {
+            const modal = document.getElementById('upload-modal');
+            modal.classList.remove('active');
+            resetUploadState();
+        }
+        
+        // 重置上传状态
+        function resetUploadState() {
+            const fileInput = document.getElementById('file-input');
+            const uploadProgress = document.getElementById('upload-progress');
+            const progressFill = document.getElementById('progress-fill');
+            const uploadZone = document.getElementById('upload-zone');
+            
+            fileInput.value = '';
+            uploadProgress.style.display = 'none';
+            progressFill.style.width = '0%';
+            uploadZone.style.display = 'block';
+        }
+        
+        // 设置上传事件处理器
+        function setupUploadHandlers() {
+            const fileInput = document.getElementById('file-input');
+            const uploadZone = document.getElementById('upload-zone');
+            
+            // 文件选择事件
+            fileInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    const file = e.target.files[0];
+                    validateAndPreviewFile(file);
+                }
+            });
+            
+            // 拖放事件
+            uploadZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            });
+            
+            uploadZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+            });
+            
+            uploadZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    validateAndPreviewFile(file);
+                }
+            });
+        }
+        
+        // 验证和预览文件
+        function validateAndPreviewFile(file) {
+            if (!file.name.toLowerCase().endsWith('.json')) {
+                showAlert('error', '只支持JSON文件格式');
+                return;
+            }
+            
+            if (file.size > 10 * 1024 * 1024) { // 10MB限制
+                showAlert('error', '文件大小不能超过10MB');
+                return;
+            }
+            
+            // 更新文件输入
+            const fileInput = document.getElementById('file-input');
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+            
+            // 更新上传区域显示
+            const uploadZone = document.getElementById('upload-zone');
+            uploadZone.innerHTML = `
+                <p>📁 已选择文件: ${file.name}</p>
+                <div class="upload-hint">大小: ${(file.size / 1024).toFixed(1)} KB</div>
+            `;
+        }
+        
+        // 上传工作流文件
+        async function uploadWorkflow() {
+            const fileInput = document.getElementById('file-input');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showAlert('error', '请先选择一个文件');
+                return;
+            }
+            
+            const uploadProgress = document.getElementById('upload-progress');
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+            const uploadZone = document.getElementById('upload-zone');
+            
+            // 显示上传进度
+            uploadZone.style.display = 'none';
+            uploadProgress.style.display = 'block';
+            progressText.textContent = '正在上传...';
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const response = await fetch('/api/workflow-files/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                // 模拟进度
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += Math.random() * 30;
+                    if (progress > 90) {
+                        clearInterval(progressInterval);
+                        progress = 90;
+                    }
+                    progressFill.style.width = progress + '%';
+                }, 100);
+                
+                const data = await response.json();
+                
+                // 清除进度模拟
+                clearInterval(progressInterval);
+                progressFill.style.width = '100%';
+                
+                if (data.success) {
+                    progressText.textContent = '上传成功！';
+                    showAlert('success', data.message);
+                    
+                    // 刷新工作流列表
+                    await loadWorkflows();
+                    
+                    // 自动选择新上传的工作流
+                    setWorkflowFile(data.filename);
+                    
+                    // 延迟关闭模态框
+                    setTimeout(() => {
+                        closeUploadModal();
+                    }, 1500);
+                } else {
+                    progressText.textContent = '上传失败';
+                    showAlert('error', '上传失败: ' + data.error);
+                    
+                    // 显示重试选项
+                    setTimeout(() => {
+                        resetUploadState();
+                    }, 2000);
+                }
+                
+            } catch (error) {
+                progressText.textContent = '上传出错';
+                showAlert('error', '上传失败: ' + error.message);
+                console.error('上传工作流失败:', error);
+                
+                // 显示重试选项
+                setTimeout(() => {
+                    resetUploadState();
+                }, 2000);
+            }
+        }
+    </script>
+    
+    <!-- 图像预览模态框 -->
+    <div id="image-modal" class="image-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeImageModal()">×</button>
+            <img id="modal-image" src="" alt="">
+        </div>
+    </div>
+    
+    <!-- 工作流上传模态框 -->
+    <div id="upload-modal" class="upload-modal">
+        <div class="upload-modal-content">
+            <h3>🚀 上传ComfyUI工作流</h3>
+            
+            <div id="upload-zone" class="upload-zone" onclick="document.getElementById('file-input').click()">
+                <p>📁 点击选择文件或拖拽到此处</p>
+                <div class="upload-hint">支持格式: .json (ComfyUI工作流文件)</div>
+            </div>
+            
+            <input type="file" id="file-input" accept=".json" style="display: none;">
+            
+            <div id="upload-progress" class="upload-progress">
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill"></div>
+                </div>
+                <div id="progress-text" class="progress-text">上传中...</div>
+            </div>
+            
+            <div class="button-group">
+                <button type="button" class="btn btn-primary" onclick="uploadWorkflow()">📤 上传</button>
+                <button type="button" class="btn btn-secondary" onclick="closeUploadModal()">❌ 取消</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

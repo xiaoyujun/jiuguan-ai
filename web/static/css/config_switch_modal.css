@@ -1,0 +1,580 @@
+/* 配置切换模态框样式 */
+
+/* 模态框基础样式（如果尚未定义） */
+#configSwitchModal.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 10, 26, 0.8);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+#configSwitchModal.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+#configSwitchModal .modal-container {
+    background: #0f0f1f;
+    border-radius: 15px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 143, 0, 0.3);
+    width: 100%;
+    max-width: 520px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s ease;
+    border: 2px solid #ff8f00;
+}
+
+#configSwitchModal.modal-overlay.show .modal-container {
+    transform: scale(1) translateY(0);
+}
+
+/* 当前配置显示区域 */
+.current-config-display {
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--accent-color) 100%);
+    border: 2px solid var(--border-gold);
+    border-radius: 10px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.current-config-label {
+    color: var(--text-silver);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.current-config-value {
+    color: var(--text-gold);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+}
+
+/* 配置列表容器 */
+.configs-container {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.configs-grid {
+    display: grid;
+    gap: 12px;
+}
+
+/* 配置项样式 */
+.config-item {
+    background: linear-gradient(135deg, var(--card-bg) 0%, var(--secondary-color) 100%);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+
+.config-item:hover {
+    border-color: var(--border-gold);
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--accent-color) 100%);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+}
+
+.config-item.active {
+    border-color: var(--border-gold);
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--text-purple) 100%);
+    box-shadow: var(--shadow-purple);
+}
+
+.config-item.active::before {
+    content: '✓';
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-gold);
+    font-size: 18px;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+}
+
+/* 配置信息 */
+.config-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.config-name {
+    color: var(--text-color);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.config-folder {
+    color: var(--text-silver);
+    font-size: 12px;
+    opacity: 0.8;
+    font-style: italic;
+}
+
+/* 配置操作按钮 */
+.config-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: 15px;
+    align-items: center;
+}
+
+.config-switch-btn-small {
+    background: linear-gradient(135deg, var(--gold-color) 0%, var(--copper-color) 100%);
+    border: none;
+    color: var(--primary-color);
+    padding: 6px 12px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+}
+
+.config-switch-btn-small:hover {
+    background: linear-gradient(135deg, var(--copper-color) 0%, var(--gold-color) 100%);
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(255, 143, 0, 0.4);
+}
+
+.config-switch-btn-small:disabled {
+    background: var(--border-color);
+    color: var(--text-silver);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* 配置导出按钮 */
+.config-export-btn-small {
+    background: linear-gradient(135deg, var(--text-purple) 0%, var(--accent-color) 100%);
+    border: none;
+    color: var(--text-color);
+    padding: 6px 8px;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+}
+
+.config-export-btn-small:hover {
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--text-purple) 100%);
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(138, 43, 226, 0.4);
+}
+
+.config-export-btn-small:disabled {
+    background: var(--border-color);
+    color: var(--text-silver);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* 配置删除按钮 */
+.config-delete-btn-small {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    border: none;
+    color: white;
+    padding: 6px 8px;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+}
+
+.config-delete-btn-small:hover {
+    background: linear-gradient(135deg, #c82333 0%, #dc3545 100%);
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.4);
+}
+
+.config-delete-btn-small:disabled {
+    background: var(--border-color);
+    color: var(--text-silver);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* 当前配置指示器 */
+.current-indicator {
+    color: var(--text-gold);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--text-purple) 100%);
+    border-radius: 5px;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+}
+
+/* 底部按钮样式扩展 */
+.btn-tertiary {
+    background: linear-gradient(135deg, var(--border-color) 0%, var(--secondary-color) 100%);
+    border: 2px solid var(--border-silver);
+    color: var(--text-silver);
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.btn-tertiary:hover {
+    border-color: var(--mercury-color);
+    color: var(--text-color);
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--border-color) 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(192, 192, 192, 0.2);
+}
+
+/* 导出按钮样式 */
+.btn-export {
+    background: linear-gradient(135deg, var(--text-purple) 0%, var(--accent-color) 100%);
+    border: 2px solid var(--text-purple);
+    color: var(--text-color);
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.btn-export:hover {
+    border-color: var(--accent-color);
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--text-purple) 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(138, 43, 226, 0.4);
+}
+
+.btn-export:disabled {
+    background: var(--border-color);
+    border-color: var(--border-color);
+    color: var(--text-silver);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* 导入按钮样式 */
+.btn-import {
+    background: linear-gradient(135deg, var(--gold-color) 0%, var(--copper-color) 100%);
+    border: 2px solid var(--gold-color);
+    color: var(--primary-color);
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.btn-import:hover {
+    border-color: var(--copper-color);
+    background: linear-gradient(135deg, var(--copper-color) 0%, var(--gold-color) 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(255, 143, 0, 0.4);
+}
+
+.btn-import:disabled {
+    background: var(--border-color);
+    border-color: var(--border-color);
+    color: var(--text-silver);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* 创建配置按钮样式 */
+.btn-create {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    border: 2px solid #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.btn-create:hover {
+    border-color: #45a049;
+    background: linear-gradient(135deg, #45a049 0%, #4CAF50 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
+}
+
+.btn-create:disabled {
+    background: var(--border-color);
+    border-color: var(--border-color);
+    color: var(--text-silver);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* 创建新配置模态框样式 */
+#createConfigModal.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 10, 26, 0.8);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+#createConfigModal.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+#createConfigModal .modal-container {
+    background: #0f0f1f;
+    border-radius: 15px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 0 0 20px rgba(76, 175, 80, 0.3);
+    width: 100%;
+    max-width: 480px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s ease;
+    border: 2px solid #4CAF50;
+}
+
+#createConfigModal.modal-overlay.show .modal-container {
+    transform: scale(1) translateY(0);
+}
+
+/* 创建配置表单样式 */
+.create-config-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.required {
+    color: #ff4444;
+}
+
+.form-input,
+.form-textarea {
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--text-color);
+    font-size: 14px;
+    transition: all 0.3s ease;
+    resize: vertical;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+    color: var(--text-silver);
+    opacity: 0.7;
+}
+
+.form-help {
+    color: var(--text-silver);
+    font-size: 12px;
+    opacity: 0.8;
+    font-style: italic;
+}
+
+/* 复选框样式 */
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    color: var(--text-color);
+    font-size: 14px;
+}
+
+.checkbox-label input[type="checkbox"] {
+    display: none;
+}
+
+.checkbox-custom {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--card-bg);
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.checkbox-label:hover .checkbox-custom {
+    border-color: #4CAF50;
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkbox-custom {
+    background: #4CAF50;
+    border-color: #4CAF50;
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkbox-custom::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* 加载和空状态样式复用 */
+.configs-container .loading-state,
+.configs-container .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-silver);
+}
+
+.configs-container .empty-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    opacity: 0.6;
+}
+
+.configs-container .spinner {
+    border: 3px solid var(--border-color);
+    border-top: 3px solid var(--gold-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 底部操作区域布局优化 */
+.modal-footer .footer-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .current-config-display {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 12px 15px;
+    }
+    
+    .config-item {
+        padding: 12px 15px;
+    }
+    
+    .config-actions {
+        margin-left: 0;
+        margin-top: 8px;
+    }
+    
+    .configs-container {
+        max-height: 300px;
+    }
+    
+    /* 移动端按钮样式调整 */
+    .modal-footer .footer-actions {
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .btn-export,
+    .btn-import,
+    .btn-tertiary,
+    .btn-secondary {
+        padding: 8px 16px;
+        font-size: 13px;
+        min-width: auto;
+    }
+}

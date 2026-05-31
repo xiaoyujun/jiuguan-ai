@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑数据书 - {{ story_name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="header">
+            <h1>编辑数据书: {{ story_name }}</h1>
+            <button onclick="window.history.back()" class="btn">返回</button>
+        </div>
+        
+        <div id="edit-form" class="edit-panel open" style="position: static; width: 100%; right: auto; height: auto;">
+            <h2>编辑数据书</h2>
+            <div id="story-form">
+                <!-- 表单内容将通过JavaScript动态加载 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const storyName = '{{ story_name }}';
+        let availableRoles = []; // 存储可用的角色列表
+        let availablePlayers = []; // 存储可用的玩家列表
+
+        // 加载可用角色列表
+        function loadAvailableRoles() {
+            return fetch('/api/roles')
+                .then(response => response.json())
+                .then(data => {
+                    availableRoles = Object.keys(data);
+                    console.log('可用角色:', availableRoles);
+                })
+                .catch(error => {
+                    console.error('加载角色列表失败:', error);
+                    availableRoles = [];
+                });
+        }
+
+        // 加载可用玩家列表
+        function loadAvailablePlayers() {
+            return fetch('/api/players')
+                .then(response => response.json())
+                .then(data => {
+                    availablePlayers = Object.keys(data);
+                    console.log('可用玩家:', availablePlayers);
+                })
+                .catch(error => {
+                    console.error('加载玩家列表失败:', error);
+                    availablePlayers = [];
+                });
+        }
+
+        // 加载数据书数据
+        function loadStoryData() {
+            fetch(`/api/stories`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data[storyName]) {
+                        const storyData = data[storyName];
+                        renderEditForm(storyData);
+                    } else {
+                        alert('数据书不存在');
+                        window.history.back();
+                    }
+                })
+                .catch(error => {
+                    console.error('加载数据书失败:', error);
+                    alert('加载数据书失败: ' + error.message);
+                });
+        }
+
+        // 渲染编辑表单
+        function renderEditForm(data) {
+            const tags = data.标签 || [];
+            let tagsHtml = '';
+            tags.forEach(tag => {
+                tagsHtml += `
+                    <div class="tag-item">
+                        <input type="text" class="tag-input" value="${tag}" placeholder="输入标签">
+                        <button type="button" onclick="removeTag(this)" class="btn small">删除</button>
+                    </div>
+                `;
+            });
+
+            const keywords = data.关键词 || [];
+            let keywordsHtml = '';
+            keywords.forEach(keyword => {
+                keywordsHtml += `
+                    <div class="keyword-item">
+                        <input type="text" class="keyword" value="${keyword}" placeholder="输入关键词">
+                        <button type="button" onclick="removeKeyword(this)" class="btn small">删除</button>
+                    </div>
+                `;
+            });
+
+            const summaryWords = data.总结词 || [];
+            let summaryWordsHtml = '';
+            summaryWords.forEach(word => {
+                summaryWordsHtml += `
+                    <div class="summary-word-item">
+                        <input type="text" class="summary-word" value="${word}" placeholder="输入总结词">
+                        <button type="button" onclick="removeSummaryWord(this)" class="btn small">删除</button>
+                    </div>
+                `;
+            });
+
+            // 处理捆绑角色
+            const boundRoles = data.捆绑角色 || [];
+            let boundRolesHtml = '';
+            boundRoles.forEach(role => {
+                boundRolesHtml += `
+                    <div class="bound-role-item">
+                        <select class="bound-role-select">
+                            <option value="">请选择角色</option>
+                            ${availableRoles.map(availableRole => 
+                                `<option value="${availableRole}" ${availableRole === role ? 'selected' : ''}>${availableRole}</option>`
+                            ).join('')}
+                        </select>
+                        <button type="button" onclick="removeBoundRole(this)" class="btn small">删除</button>
+                    </div>
+                `;
+            });
+
+            const boundPlayers = data.捆绑玩家 || [];
+            let boundPlayersHtml = '';
+            boundPlayers.forEach(player => {
+                boundPlayersHtml += `
+                    <div class="bound-player-item">
+                        <select class="bound-player-select">
+                            <option value="">请选择玩家</option>
+                            ${availablePlayers.map(availablePlayer => 
+                                `<option value="${availablePlayer}" ${availablePlayer === player ? 'selected' : ''}>${availablePlayer}</option>`
+                            ).join('')}
+                        </select>
+                        <button type="button" onclick="removeBoundPlayer(this)" class="btn small">删除</button>
+                    </div>
+                `;
+            });
+
+            const attributes = data.属性 || {};
+            let attributesHtml = '';
+            for (const [attrName, attrValue] of Object.entries(attributes)) {
+                if (typeof attrValue === 'object' && attrValue !== null) {
+                    const nestedItems = Object.entries(attrValue).map(([key, value]) => 
+                        `<div class="nested-attr-item">
+                            <input type="text" class="nested-attr-key" value="${key}" placeholder="键">
+                            <input type="text" class="nested-attr-value" value="${value}" placeholder="值">
+                            <button type="button" onclick="removeNestedAttr(this)" class="btn small">×</button>
+                        </div>`
+                    ).join('');
+                    attributesHtml += `
+                        <div class="attribute-item">
+                            <input type="text" class="attr-name" value="${attrName}" placeholder="属性名">
+                            <div class="nested-attributes">${nestedItems}</div>
+                            <button type="button" onclick="addNestedAttr(this.previousElementSibling)" class="btn small">+ 添加子属性</button>
+                            <button type="button" onclick="removeAttribute(this)" class="btn small">删除属性</button>
+                        </div>
+                    `;
+                } else {
+                    attributesHtml += `
+                        <div class="attribute-item">
+                            <input type="text" class="attr-name" value="${attrName}" placeholder="属性名">
+                            <input type="text" class="attr-value" value="${attrValue}" placeholder="属性值">
+                            <button type="button" onclick="removeAttribute(this)" class="btn small">删除</button>
+                        </div>
+                    `;
+                }
+            }
+
+            const formHtml = `
+                <div class="form-group">
+                    <label>数据名:</label>
+                    <input type="text" id="edit-name" value="${storyName}">
+                </div>
+                <div class="form-group">
+                    <label>描述:</label>
+                    <textarea id="edit-description">${data.描述 || ''}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>捆绑角色:</label>
+                    <p class="help-text">选择与此数据书捆绑的角色，当与这些角色聊天时，数据书数据会自动添加到临时数据中</p>
+                    <div id="bound-roles-container">${boundRolesHtml}</div>
+                    <button type="button" onclick="addBoundRole()" class="btn secondary">+ 添加捆绑角色</button>
+                </div>
+                <div class="form-group">
+                    <label>捆绑玩家:</label>
+                    <p class="help-text">选择与此数据书捆绑的玩家，当使用这些玩家进行聊天时，数据书数据会自动添加到临时数据中</p>
+                    <div id="bound-players-container">${boundPlayersHtml}</div>
+                    <button type="button" onclick="addBoundPlayer()" class="btn secondary">+ 添加捆绑玩家</button>
+                </div>
+                <div class="form-group">
+                    <label>标签:</label>
+                    <div id="tags-container">${tagsHtml}</div>
+                    <button type="button" onclick="addTag()" class="btn secondary">+ 添加标签</button>
+                </div>
+                <div class="form-group">
+                    <label>总结词:</label>
+                    <div id="summary-words-container">${summaryWordsHtml}</div>
+                    <button type="button" onclick="addSummaryWord()" class="btn secondary">+ 添加总结词</button>
+                </div>
+                <div class="form-group">
+                    <label>关键词:</label>
+                    <div id="keywords-container">${keywordsHtml}</div>
+                    <button type="button" onclick="addKeyword()" class="btn secondary">+ 添加关键词</button>
+                </div>
+                <div class="form-group">
+                    <label>属性:</label>
+                    <div id="attributes-container">${attributesHtml}</div>
+                    <div class="attribute-controls">
+                        <button type="button" onclick="addSimpleAttribute()" class="btn secondary">+ 添加简单属性</button>
+                        <button type="button" onclick="addObjectAttribute()" class="btn secondary">+ 添加对象属性</button>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn" onclick="saveEdit()">保存</button>
+                    <button class="btn cancel" onclick="window.history.back()">取消</button>
+                </div>
+            `;
+
+            document.getElementById('story-form').innerHTML = formHtml;
+        }
+
+        // 保存编辑
+        function saveEdit() {
+            const updatedData = {
+                描述: document.getElementById('edit-description').value,
+                捆绑角色: Array.from(document.querySelectorAll('.bound-role-select')).map(select => select.value).filter(role => role),
+                捆绑玩家: Array.from(document.querySelectorAll('.bound-player-select')).map(select => select.value).filter(player => player),
+                标签: Array.from(document.querySelectorAll('.tag-input')).map(input => input.value.trim()).filter(tag => tag),
+                总结词: Array.from(document.querySelectorAll('.summary-word')).map(input => input.value.trim()).filter(word => word),
+                关键词: Array.from(document.querySelectorAll('.keyword')).map(input => input.value.trim()).filter(keyword => keyword),
+                属性: {}
+            };
+
+            // 收集属性数据
+            const attributeItems = document.querySelectorAll('.attribute-item');
+            attributeItems.forEach(item => {
+                const attrName = item.querySelector('.attr-name').value.trim();
+                if (attrName) {
+                    const nestedAttrs = item.querySelector('.nested-attributes');
+                    if (nestedAttrs) {
+                        const nestedObj = {};
+                        const nestedItems = nestedAttrs.querySelectorAll('.nested-attr-item');
+                        nestedItems.forEach(nestedItem => {
+                            const key = nestedItem.querySelector('.nested-attr-key').value.trim();
+                            const value = nestedItem.querySelector('.nested-attr-value').value.trim();
+                            if (key) {
+                                nestedObj[key] = value;
+                            }
+                        });
+                        updatedData.属性[attrName] = nestedObj;
+                    } else {
+                        const attrValue = item.querySelector('.attr-value').value.trim();
+                        updatedData.属性[attrName] = attrValue;
+                    }
+                }
+            });
+
+            fetch(`/api/stories/${encodeURIComponent(storyName)}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('保存成功');
+                    window.history.back();
+                } else {
+                    alert('保存失败: ' + (data.error || '未知错误'));
+                }
+            })
+            .catch(error => {
+                console.error('保存失败:', error);
+                alert('保存失败: ' + error.message);
+            });
+        }
+
+        // 页面加载时先加载角色和玩家列表，再加载数据书数据
+        document.addEventListener('DOMContentLoaded', function() {
+            Promise.all([loadAvailableRoles(), loadAvailablePlayers()]).then(() => {
+                loadStoryData();
+            });
+        });
+
+        // 添加捆绑角色相关的函数
+        function addBoundRole() {
+            const container = document.getElementById('bound-roles-container');
+            const roleItem = document.createElement('div');
+            roleItem.className = 'bound-role-item';
+            roleItem.innerHTML = `
+                <select class="bound-role-select">
+                    <option value="">请选择角色</option>
+                    ${availableRoles.map(role => `<option value="${role}">${role}</option>`).join('')}
+                </select>
+                <button type="button" onclick="removeBoundRole(this)" class="btn small">删除</button>
+            `;
+            container.appendChild(roleItem);
+        }
+
+        function removeBoundRole(button) {
+            button.parentElement.remove();
+        }
+
+        function addBoundPlayer() {
+            const container = document.getElementById('bound-players-container');
+            const playerItem = document.createElement('div');
+            playerItem.className = 'bound-player-item';
+            playerItem.innerHTML = `
+                <select class="bound-player-select">
+                    <option value="">请选择玩家</option>
+                    ${availablePlayers.map(player => `<option value="${player}">${player}</option>`).join('')}
+                </select>
+                <button type="button" onclick="removeBoundPlayer(this)" class="btn small">删除</button>
+            `;
+            container.appendChild(playerItem);
+        }
+
+        function removeBoundPlayer(button) {
+            button.parentElement.remove();
+        }
+
+        // 以下是辅助函数，与主页面相同
+        function addSimpleAttribute() {
+            const container = document.getElementById('attributes-container');
+            const attributeItem = document.createElement('div');
+            attributeItem.className = 'attribute-item';
+            attributeItem.innerHTML = `
+                <input type="text" class="attr-name" placeholder="属性名">
+                <input type="text" class="attr-value" placeholder="属性值">
+                <button type="button" onclick="removeAttribute(this)" class="btn small">删除</button>
+            `;
+            container.appendChild(attributeItem);
+        }
+
+        function addObjectAttribute() {
+            const container = document.getElementById('attributes-container');
+            const attributeItem = document.createElement('div');
+            attributeItem.className = 'attribute-item';
+            attributeItem.innerHTML = `
+                <input type="text" class="attr-name" placeholder="属性名">
+                <div class="nested-attributes">
+                    <div class="nested-attr-item">
+                        <input type="text" class="nested-attr-key" placeholder="键">
+                        <input type="text" class="nested-attr-value" placeholder="值">
+                        <button type="button" onclick="removeNestedAttr(this)" class="btn small">×</button>
+                    </div>
+                </div>
+                <button type="button" onclick="addNestedAttr(this.previousElementSibling)" class="btn small">+ 添加子属性</button>
+                <button type="button" onclick="removeAttribute(this)" class="btn small">删除属性</button>
+            `;
+            container.appendChild(attributeItem);
+        }
+
+        function addNestedAttr(container) {
+            const nestedItem = document.createElement('div');
+            nestedItem.className = 'nested-attr-item';
+            nestedItem.innerHTML = `
+                <input type="text" class="nested-attr-key" placeholder="键">
+                <input type="text" class="nested-attr-value" placeholder="值">
+                <button type="button" onclick="removeNestedAttr(this)" class="btn small">×</button>
+            `;
+            container.appendChild(nestedItem);
+        }
+
+        function removeNestedAttr(button) {
+            button.parentElement.remove();
+        }
+
+        function removeAttribute(button) {
+            button.parentElement.remove();
+        }
+
+        function addSummaryWord() {
+            const container = document.getElementById('summary-words-container');
+            const summaryWordItem = document.createElement('div');
+            summaryWordItem.className = 'summary-word-item';
+            summaryWordItem.innerHTML = `
+                <input type="text" class="summary-word" placeholder="输入总结词">
+                <button type="button" onclick="removeSummaryWord(this)" class="btn small">删除</button>
+            `;
+            container.appendChild(summaryWordItem);
+        }
+
+        function removeSummaryWord(button) {
+            button.parentElement.remove();
+        }
+
+        function addKeyword() {
+            const container = document.getElementById('keywords-container');
+            const keywordItem = document.createElement('div');
+            keywordItem.className = 'keyword-item';
+            keywordItem.innerHTML = `
+                <input type="text" class="keyword" placeholder="输入关键词">
+                <button type="button" onclick="removeKeyword(this)" class="btn small">删除</button>
+            `;
+            container.appendChild(keywordItem);
+        }
+
+        function removeKeyword(button) {
+            button.parentElement.remove();
+        }
+
+        function addTag() {
+            const container = document.getElementById('tags-container');
+            const tagItem = document.createElement('div');
+            tagItem.className = 'tag-item';
+            tagItem.innerHTML = `
+                <input type="text" class="tag-input" placeholder="输入标签">
+                <button type="button" onclick="removeTag(this)" class="btn small">删除</button>
+            `;
+            container.appendChild(tagItem);
+        }
+
+        function removeTag(button) {
+            button.parentElement.remove();
+        }
+    </script>
+</body>
+</html>

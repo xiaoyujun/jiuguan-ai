@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>增强总结功能 - 秘教角色扮演聊天</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .enhanced-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #333;
+        }
+        
+        .page-title {
+            color: #e0e0e0;
+            font-size: 28px;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #4CAF50, #2196F3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .page-subtitle {
+            color: #888;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .feature-highlights {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .feature-card {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid #4CAF50;
+            transition: transform 0.2s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .feature-title {
+            color: #4CAF50;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .feature-desc {
+            color: #ccc;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .controls-section {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .controls-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .controls-title {
+            color: #e0e0e0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .batch-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        .btn-primary {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1976D2;
+        }
+        
+        .btn-success {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #388E3C;
+        }
+        
+        .btn-warning {
+            background: #FF9800;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #F57C00;
+        }
+        
+        .btn-secondary {
+            background: #666;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #555;
+        }
+        
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+            padding: 10px;
+            background: #1a1a1a;
+            border-radius: 5px;
+        }
+        
+        .setting-label {
+            color: #e0e0e0;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .setting-desc {
+            color: #888;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+        
+        .setting-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .slider {
+            width: 100px;
+        }
+        
+        .slider-value {
+            color: #4CAF50;
+            font-weight: bold;
+            min-width: 20px;
+        }
+        
+        .story-books-section {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .story-books-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .story-books-title {
+            color: #e0e0e0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .selection-info {
+            color: #4CAF50;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .story-books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .story-book-card {
+            background: #1a1a1a;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .story-book-card:hover {
+            border-color: #333;
+            transform: translateY(-1px);
+        }
+        
+        .story-book-card.selected {
+            border-color: #4CAF50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+        }
+        
+        /* 匹配状态样式 */
+        .story-book-card.bound {
+            border-left: 4px solid #FF9800;
+            background: linear-gradient(90deg, #3a2a1a 0%, #1a1a1a 10%);
+        }
+        
+        .story-book-card.matched {
+            border-left: 4px solid #4CAF50;
+            background: linear-gradient(90deg, #1a3a1a 0%, #1a1a1a 10%);
+        }
+        
+        .story-book-card.unmatched {
+            border-left: 4px solid #666;
+            opacity: 0.7;
+        }
+        
+        .match-status {
+            margin-left: 8px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .match-status.bound {
+            color: #FF9800;
+            font-size: 16px;
+        }
+        
+        .match-status.matched {
+            color: #4CAF50;
+        }
+        
+        .match-status.unmatched {
+            color: #666;
+        }
+        
+        .stat-item.bound {
+            color: #FF9800;
+        }
+        
+        .stat-item.matched {
+            color: #4CAF50;
+        }
+        
+        .stat-item.unmatched {
+            color: #666;
+        }
+        
+        .story-book-checkbox {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            transform: scale(1.2);
+        }
+        
+        .story-book-content {
+            padding: 15px;
+            cursor: pointer;
+        }
+        
+        .story-book-name {
+            color: #e0e0e0;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .story-book-icon {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+        
+        .story-book-stats {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 12px;
+        }
+        
+        .stat-item {
+            color: #888;
+        }
+        
+        .stat-value {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        
+        .keywords-container {
+            margin-top: 8px;
+        }
+        
+        .keywords-label {
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        
+        .keywords-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        
+        .keyword-tag {
+            background: #333;
+            color: #e0e0e0;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            border: 1px solid #444;
+        }
+        
+        .keyword-tag.truncated {
+            background: #444;
+            color: #888;
+        }
+        
+        .start-section {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+        
+        .start-btn {
+            padding: 15px 40px;
+            font-size: 18px;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        .start-btn:disabled {
+            background: #444;
+            color: #888;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .progress-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .progress-card {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid #333;
+            border-radius: 50%;
+            border-top-color: #4CAF50;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 15px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .filter-bar {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #1a1a1a;
+            border-radius: 5px;
+        }
+        
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .filter-label {
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+        
+        .filter-input {
+            padding: 5px 10px;
+            background: #333;
+            border: 1px solid #444;
+            border-radius: 3px;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+        
+        .filter-input:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+        
+        @media (max-width: 768px) {
+            .enhanced-container {
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            .feature-highlights {
+                grid-template-columns: 1fr;
+            }
+            
+            .story-books-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .batch-controls {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="enhanced-container">
+        <div class="page-header">
+            {% if is_event_mode %}
+            <h1 class="page-title">📖 事件数据书分析</h1>
+            <p class="page-subtitle">分析《{{ event_name }}》事件的数据书数据更新需求</p>
+            
+            <!-- 事件信息卡片 -->
+            <div class="event-info-card" style="background: #2a2a2a; border-radius: 8px; padding: 15px; margin: 20px 0; border-left: 4px solid #2196F3;">
+                <h3 style="color: #2196F3; margin-bottom: 10px;">📋 事件信息</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                    <div>
+                        <span style="color: #888;">事件名称:</span>
+                        <span style="color: #e0e0e0; font-weight: bold;">{{ event_name }}</span>
+                    </div>
+                    {% if event_description %}
+                    <div>
+                        <span style="color: #888;">事件描述:</span>
+                        <span style="color: #e0e0e0;">{{ event_description }}</span>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <span style="color: #888;">参与角色:</span>
+                        <span style="color: #e0e0e0;">{{ participants|join(', ') }}</span>
+                    </div>
+                    <div>
+                        <span style="color: #888;">相关数据书:</span>
+                        <span style="color: #e0e0e0;">{{ storybooks|join(', ') }}</span>
+                    </div>
+                    <div>
+                        <span style="color: #888;">对话轮数:</span>
+                        <span style="color: #e0e0e0;">{{ event_history|length }} 条消息</span>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <h1 class="page-title">🚀 增强总结功能</h1>
+            <p class="page-subtitle">
+                智能并发处理，精确状态跟踪，失败自动重试
+                {% if current_player is defined %}
+                <br><span style="color: #FF9800;">🎭 角色: {{ role }} | 🎮 玩家: {{ current_player }}</span>
+                {% endif %}
+            </p>
+            {% endif %}
+            
+            <div class="feature-highlights">
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-title">并发处理</div>
+                    <div class="feature-desc">同时处理多个数据书，大幅提升处理速度</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">实时监控</div>
+                    <div class="feature-desc">独立跟踪每个数据书的处理状态和进度</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <div class="feature-title">智能重试</div>
+                    <div class="feature-desc">失败任务自动重试，详细记录失败原因</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">精准选择</div>
+                    <div class="feature-desc">自由选择要处理的数据书，避免无关处理</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls-section">
+            <div class="controls-header">
+                <h3 class="controls-title">⚙️ 处理设置</h3>
+            </div>
+            
+            <div class="settings-row">
+                <div>
+                    <div class="setting-label">并发数量</div>
+                    <div class="setting-desc">同时处理的数据书数量，数量越多速度越快但占用资源越多</div>
+                </div>
+                <div class="setting-control">
+                    <input type="range" id="max-workers" class="slider" min="1" max="8" value="3">
+                    <span class="slider-value" id="workers-value">3</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="story-books-section">
+            <div class="story-books-header">
+                <h3 class="story-books-title">📚 选择数据书</h3>
+                
+                <!-- 添加匹配统计信息 -->
+                {% if matched_count is defined and total_count is defined %}
+                <div class="match-stats" style="display: flex; gap: 15px; margin: 10px 0; padding: 10px; background: #2a2a2a; border-radius: 8px; font-size: 14px;">
+                    {% if bound_count is defined and bound_count > 0 %}
+                    <div class="match-stat-item" style="color: #FF9800;">
+                        <span style="margin-right: 5px;">🔗</span>
+                        绑定: <strong>{{ bound_count }}</strong> 个
+                    </div>
+                    {% endif %}
+                    <div class="match-stat-item" style="color: #4CAF50;">
+                        <span style="margin-right: 5px;">✓</span>
+                        匹配: <strong>{{ matched_count }}</strong> 个
+                    </div>
+                    <div class="match-stat-item" style="color: #888;">
+                        <span style="margin-right: 5px;">○</span>
+                        未匹配: <strong>{{ total_count - matched_count - (bound_count if bound_count is defined else 0) }}</strong> 个
+                    </div>
+                    <div class="match-stat-item" style="color: #e0e0e0;">
+                        <span style="margin-right: 5px;">📊</span>
+                        总计: <strong>{{ total_count }}</strong> 个
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- 添加聊天内容预览 -->
+                
+                {% if error_message is defined %}
+                <div class="error-message" style="margin: 10px 0; padding: 10px; background: #441; border-radius: 8px; color: #f88;">
+                    ⚠️ {{ error_message }}
+                </div>
+                {% endif %}
+                
+                <div class="selection-info" id="selection-info">未选择任何数据书</div>
+                <div class="batch-controls">
+                    <button class="btn btn-success btn-small" onclick="selectAll()">全选</button>
+                    <button class="btn btn-warning btn-small" onclick="selectNone()">清空</button>
+                    <button class="btn btn-primary btn-small" onclick="selectMatchingOnly()">仅选匹配项</button>
+                </div>
+            </div>
+            
+            <div class="filter-bar">
+                <div class="filter-item">
+                    <span class="filter-label">筛选:</span>
+                    <input type="text" id="filter-input" class="filter-input" placeholder="按数据书名称筛选..." 
+                           onkeyup="filterStoryBooks()">
+                </div>
+                <div class="filter-item">
+                    <span class="filter-label">排序:</span>
+                    <select id="sort-select" class="filter-input" onchange="sortStoryBooks()">
+                        <option value="name">按名称</option>
+                        <option value="keywords">按总结词数量</option>
+                        <option value="attributes">按属性数量</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="story-books-grid" id="story-books-grid">
+                {% for book in story_books %}
+                <div class="story-book-card {{ 'bound' if book.is_bound else ('matched' if book.is_matched else 'unmatched') }}" 
+                     data-story-name="{{ book.name }}" 
+                     data-keywords="{{ book.total_keywords }}" 
+                     data-attributes="{{ book.attributes_count }}"
+                     data-is-matched="{{ 'true' if book.is_matched else 'false' }}"
+                     data-is-bound="{{ 'true' if book.is_bound else 'false' }}">
+                    <input type="checkbox" class="story-book-checkbox" 
+                           onchange="updateSelection()" id="checkbox-{{ book.name }}"
+                           {{ 'checked' if (book.is_bound or book.is_matched) else '' }}>
+                    <div class="story-book-content" onclick="toggleStoryBook('{{ book.name }}')">
+                        <div class="story-book-name">
+                            <span class="story-book-icon">📖</span>
+                            {{ book.name }}
+                            <span class="match-status {{ 'bound' if book.is_bound else ('matched' if book.is_matched else 'unmatched') }}">
+                                {{ '🔗' if book.is_bound else ('✓' if book.is_matched else '○') }}
+                            </span>
+                        </div>
+                        <div class="story-book-stats">
+                            <div class="stat-item">
+                                总结词: <span class="stat-value">{{ book.total_keywords }}</span>
+                            </div>
+                            <div class="stat-item">
+                                属性: <span class="stat-value">{{ book.attributes_count }}</span>
+                            </div>
+                            <div class="stat-item">
+                                事件: <span class="stat-value">{{ '有' if book.has_events else '无' }}</span>
+                            </div>
+                            <div class="stat-item {{ 'bound' if book.is_bound else ('matched' if book.is_matched else 'unmatched') }}">
+                                状态: <span class="stat-value">{{ book.match_reason }}</span>
+                            </div>
+                        </div>
+                        {% if book.keywords %}
+                        <div class="keywords-container">
+                            <div class="keywords-label">总结词预览:</div>
+                            <div class="keywords-list">
+                                {% for keyword in book.keywords %}
+                                <span class="keyword-tag">{{ keyword }}</span>
+                                {% endfor %}
+                                {% if book.total_keywords > book.keywords|length %}
+                                <span class="keyword-tag truncated">+{{ book.total_keywords - book.keywords|length }}...</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="start-section">
+            <button class="start-btn" id="start-btn" onclick="startEnhancedSummary()" disabled>
+                🚀 开始智能总结
+            </button>
+            <div style="margin-top: 15px;">
+                <a href="/" class="btn btn-secondary">返回主页</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 进度覆盖层 -->
+    <div class="progress-overlay" id="progress-overlay" style="display: none;">
+        <div class="progress-card">
+            <div class="spinner"></div>
+            <div style="color: #e0e0e0; font-size: 16px; margin-bottom: 10px;">正在启动智能总结...</div>
+            <div style="color: #888; font-size: 14px;">请稍候，正在初始化处理任务</div>
+        </div>
+    </div>
+
+    <script>
+        const role = '{{ role }}';
+        let selectedStories = [];
+        let allStoryBooks = [];
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取所有数据书信息
+            allStoryBooks = Array.from(document.querySelectorAll('.story-book-card')).map(card => ({
+                name: card.dataset.storyName,
+                keywords: parseInt(card.dataset.keywords) || 0,
+                attributes: parseInt(card.dataset.attributes) || 0,
+                isMatched: card.dataset.isMatched === 'true',
+                isBound: card.dataset.isBound === 'true',
+                element: card
+            }));
+            
+            // 自动选中绑定的数据书
+            {% if auto_selected_stories is defined and auto_selected_stories %}
+            const autoSelectedStories = {{ auto_selected_stories|tojson }};
+            console.log('🔗 自动选中绑定的数据书:', autoSelectedStories);
+            
+            autoSelectedStories.forEach(storyName => {
+                const checkbox = document.getElementById(`checkbox-${storyName}`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                    console.log(`✅ 自动选中数据书: ${storyName}`);
+                }
+            });
+            {% endif %}
+            
+            // 设置并发数量滑块
+            const slider = document.getElementById('max-workers');
+            const valueDisplay = document.getElementById('workers-value');
+            
+            slider.addEventListener('input', function() {
+                valueDisplay.textContent = this.value;
+            });
+            
+            // 初始化选择状态
+            updateSelection();
+        });
+        
+        function toggleStoryBook(storyName) {
+            const checkbox = document.getElementById('checkbox-' + storyName);
+            checkbox.checked = !checkbox.checked;
+            updateSelection();
+        }
+        
+        function updateSelection() {
+            selectedStories = [];
+            const checkboxes = document.querySelectorAll('.story-book-checkbox');
+            
+            checkboxes.forEach(checkbox => {
+                const card = checkbox.closest('.story-book-card');
+                if (checkbox.checked) {
+                    selectedStories.push(card.dataset.storyName);
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            });
+            
+            // 更新选择信息
+            const selectionInfo = document.getElementById('selection-info');
+            if (selectedStories.length === 0) {
+                selectionInfo.textContent = '未选择任何数据书';
+                selectionInfo.style.color = '#888';
+            } else {
+                selectionInfo.textContent = `已选择 ${selectedStories.length} 个数据书`;
+                selectionInfo.style.color = '#4CAF50';
+            }
+            
+            // 更新开始按钮状态
+            const startBtn = document.getElementById('start-btn');
+            startBtn.disabled = selectedStories.length === 0;
+        }
+        
+        function selectAll() {
+            const checkboxes = document.querySelectorAll('.story-book-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            updateSelection();
+        }
+        
+        function selectNone() {
+            const checkboxes = document.querySelectorAll('.story-book-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateSelection();
+        }
+        
+        function selectMatchingOnly() {
+            // 只选择匹配关键词的数据书
+            const checkboxes = document.querySelectorAll('.story-book-checkbox');
+            checkboxes.forEach(checkbox => {
+                const card = checkbox.closest('.story-book-card');
+                const isMatched = card.dataset.isMatched === 'true';
+                checkbox.checked = isMatched;  // 选择匹配关键词的数据书
+            });
+            updateSelection();
+        }
+        
+        function filterStoryBooks() {
+            const filter = document.getElementById('filter-input').value.toLowerCase();
+            const cards = document.querySelectorAll('.story-book-card');
+            
+            cards.forEach(card => {
+                const name = card.dataset.storyName.toLowerCase();
+                if (name.includes(filter)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+        
+        function sortStoryBooks() {
+            const sortBy = document.getElementById('sort-select').value;
+            const grid = document.getElementById('story-books-grid');
+            const cards = Array.from(grid.children);
+            
+            cards.sort((a, b) => {
+                switch (sortBy) {
+                    case 'name':
+                        return a.dataset.storyName.localeCompare(b.dataset.storyName);
+                    case 'keywords':
+                        return parseInt(b.dataset.keywords) - parseInt(a.dataset.keywords);
+                    case 'attributes':
+                        return parseInt(b.dataset.attributes) - parseInt(a.dataset.attributes);
+                    default:
+                        return 0;
+                }
+            });
+            
+            // 重新排列元素
+            cards.forEach(card => grid.appendChild(card));
+        }
+        
+        function startEnhancedSummary() {
+            if (selectedStories.length === 0) {
+                alert('请至少选择一个数据书！');
+                return;
+            }
+            
+            // 显示进度覆盖层
+            document.getElementById('progress-overlay').style.display = 'flex';
+            
+            // 获取设置
+            const maxWorkers = parseInt(document.getElementById('max-workers').value);
+            
+            // 准备请求数据
+            const requestData = {
+                role: role,
+                selected_stories: selectedStories,
+                max_workers: maxWorkers
+            };
+            
+            // 如果是事件模式，添加事件数据
+            {% if is_event_mode %}
+            requestData.event_data = {
+                event_name: '{{ event_name }}',
+                event_description: '{{ event_description }}',
+                participants: {{ participants|tojson }},
+                storybooks: {{ storybooks|tojson }},
+                history: {{ event_history|tojson }}
+            };
+            {% endif %}
+            
+            // 发送启动请求
+            fetch('/start_summary', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 跳转到进度页面
+                    window.location.href = data.redirect_url;
+                } else {
+                    throw new Error(data.error || '启动失败');
+                }
+            })
+            .catch(error => {
+                console.error('启动失败:', error);
+                alert('启动失败: ' + error.message);
+                document.getElementById('progress-overlay').style.display = 'none';
+            });
+        }
+    </script>
+</body>
+</html>

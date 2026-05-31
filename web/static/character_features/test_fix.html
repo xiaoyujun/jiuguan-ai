@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据书功能修复测试</title>
+</head>
+<body>
+    <h1>数据书功能修复测试</h1>
+    
+    <h2>修复内容</h2>
+    <ul>
+        <li>✅ 移除了对 <code>updateStorybookTab()</code> 方法的调用</li>
+        <li>✅ 在角色类别切换时不再调用已删除的方法</li>
+        <li>✅ 在标签页切换时触发AI生成器的自动填充功能</li>
+        <li>✅ 确保AI生成器与当前角色信息同步</li>
+    </ul>
+    
+    <h2>错误信息</h2>
+    <pre>
+character_management.js:421  初始化失败: TypeError: this.updateStorybookTab is not a function
+    at CharacterManagement.handleCategoryChange (character_management.js:1658:14)
+    at CharacterManagement.selectCategory (character_management.js:1590:14)
+    at CharacterManagement.setupCategorySelector (character_management.js:1551:14)
+    at CharacterManagement.setupEventListeners (character_management.js:475:14)
+    at CharacterManagement.init (character_management.js:387:18)
+    at new CharacterManagement (character_management.js:37:14)
+    at HTMLDocument.<anonymous> (character_management.js:3054:27)
+    </pre>
+    
+    <h2>修复说明</h2>
+    <p>
+        在完全重构数据书功能时，我们移除了复杂的 <code>StorybookManager</code> 类和相关的 <code>updateStorybookTab()</code> 方法。
+        但是在角色类别切换逻辑中还存在对这个方法的调用，导致了运行时错误。
+    </p>
+    
+    <p>
+        现在已经修复了这个问题：
+    </p>
+    <ol>
+        <li>移除了 <code>handleCategoryChange()</code> 中对 <code>updateStorybookTab()</code> 的调用</li>
+        <li>在 <code>switchTab()</code> 方法中添加了对AI生成器自动填充功能的调用</li>
+        <li>确保AI生成器的 <code>currentCharacter</code> 属性与主系统保持同步</li>
+    </ol>
+    
+    <h2>预期行为</h2>
+    <ul>
+        <li>角色管理系统应该能够正常初始化</li>
+        <li>切换角色类别不会出现错误</li>
+        <li>切换到数据书标签页时会自动填充角色简介</li>
+        <li>AI生成数据书功能正常工作</li>
+    </ul>
+    
+    <script>
+        console.log('修复测试页面加载完成');
+        console.log('请在角色管理页面测试以下操作：');
+        console.log('1. 创建新角色并切换类别');
+        console.log('2. 切换到数据书标签页');
+        console.log('3. 检查自动填充功能');
+        console.log('4. 测试AI生成功能');
+    </script>
+</body>
+</html>

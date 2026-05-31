@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>玩家管理</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/player_management.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <div class="header-left">
+                <h1 class="page-title">
+                    <span class="icon">👤</span>
+                    玩家管理
+                </h1>
+                <p class="page-subtitle">管理你的玩家角色</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-primary" onclick="createNewPlayer()">
+                    <span class="icon">+</span>
+                    新建玩家
+                </button>
+                <button class="btn-secondary" onclick="goBack()">
+                    <span class="icon">←</span>
+                    返回
+                </button>
+            </div>
+        </div>
+
+        <!-- 搜索栏 -->
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" id="playerSearchInput" placeholder="搜索玩家...">
+                <span class="search-icon">🔍</span>
+            </div>
+        </div>
+
+        <!-- 玩家列表 -->
+        <div class="players-container">
+            <div class="players-grid" id="playersGrid">
+                <!-- 玩家卡片将通过JavaScript动态加载 -->
+            </div>
+            
+            <!-- 加载状态 -->
+            <div class="loading-state" id="loadingState">
+                <div class="spinner"></div>
+                <p>正在加载玩家列表...</p>
+            </div>
+            
+            <!-- 空状态 -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="empty-icon">📝</div>
+                <p>还没有创建任何玩家</p>
+                <button class="btn-primary" onclick="createNewPlayer()">创建第一个玩家</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 玩家编辑模态框 -->
+    <div class="modal-overlay" id="playerEditModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 id="modalTitle">编辑玩家</h2>
+                <button class="modal-close" onclick="closePlayerEditModal()">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="playerEditForm">
+                    <!-- 头像设置 -->
+                    <div class="form-group">
+                        <label>玩家头像</label>
+                        <div class="avatar-upload-section">
+                            <div class="avatar-preview" id="avatarPreview">
+                                <img id="avatarImage" src="" alt="头像预览" style="display: none;">
+                                <div class="avatar-placeholder" id="avatarPlaceholder">👤</div>
+                            </div>
+                            <div class="avatar-controls">
+                                <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+                                <button type="button" class="btn-secondary" onclick="selectAvatar()">选择头像</button>
+                                <button type="button" class="btn-danger" id="removeAvatarBtn" onclick="removeAvatar()" style="display: none;">删除头像</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="playerVoiceId">
+                            <i class="fas fa-microphone"></i>
+                            语音ID
+                        </label>
+                        <input type="text" id="playerVoiceId" name="playerVoiceId" placeholder="例如：speech:jian:d2ejc5h719ns73evoen0:dujtlginekslwlciukxd">
+                        <small style="color: #888; display: block; margin-top: 5px;">设置玩家的语音ID，用于语音合成功能</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="playerName">玩家名称</label>
+                        <input type="text" id="playerName" name="playerName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="playerDescription">角色介绍</label>
+                        <textarea id="playerDescription" name="playerDescription" rows="4" placeholder="输入角色介绍..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>当前玩家</label>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="isCurrentPlayer" name="isCurrentPlayer">
+                            <label for="isCurrentPlayer">设为当前玩家</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closePlayerEditModal()">取消</button>
+                <button class="btn-danger" id="deletePlayerBtn" onclick="deletePlayer()" style="display: none;">删除</button>
+                <button class="btn-primary" onclick="savePlayer()">保存</button>
+                <button class="btn-success" id="saveAndCreateStorybookBtn" onclick="savePlayerAndCreateStorybook()">
+                    <i class="fas fa-magic"></i>
+                    保存并AI创建数据书
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认删除模态框 -->
+    <div class="modal-overlay" id="confirmDeleteModal">
+        <div class="modal-container small">
+            <div class="modal-header">
+                <h2>确认删除</h2>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除玩家 "<span id="deletePlayerName"></span>" 吗？</p>
+                <p class="warning">删除后数据将无法恢复</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeConfirmDeleteModal()">取消</button>
+                <button class="btn-danger" onclick="confirmDeletePlayer()">确认删除</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/player_management.js') }}"></script>
+</body>
+</html>

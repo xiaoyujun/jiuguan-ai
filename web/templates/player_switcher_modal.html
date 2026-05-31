@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>快速切换玩家</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/player_switcher_modal.css') }}">
+</head>
+<body>
+    <div class="modal-overlay" id="playerSwitcherModal">
+        <div class="modal-container">
+            <!-- 头部 -->
+            <div class="modal-header">
+                <h2 class="modal-title">👤 快速切换玩家</h2>
+                <button class="close-btn" onclick="closePlayerSwitcherModal()">
+                    <span>×</span>
+                </button>
+            </div>
+            
+            <!-- 搜索区域 -->
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <input type="text" 
+                           id="playerSearchInput" 
+                           class="search-input" 
+                           placeholder="🔍 搜索玩家名称..."
+                           autocomplete="off">
+                    <button class="search-clear-btn" id="playerSearchClearBtn" onclick="clearPlayerSearch()">
+                        <span>×</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 玩家列表 -->
+            <div class="players-container">
+                <div class="players-grid" id="playersGrid">
+                    <!-- 玩家项将通过JavaScript动态加载 -->
+                </div>
+                
+                <!-- 加载状态 -->
+                <div class="loading-state" id="playerLoadingState">
+                    <div class="spinner"></div>
+                    <p>正在加载玩家列表...</p>
+                </div>
+                
+                <!-- 空状态 -->
+                <div class="empty-state" id="playerEmptyState" style="display: none;">
+                    <div class="empty-icon">🔍</div>
+                    <p>没有找到匹配的玩家</p>
+                    <small>请尝试其他搜索关键词</small>
+                </div>
+            </div>
+            
+            <!-- 底部操作 -->
+            <div class="modal-footer">
+                <div class="footer-info">
+                    <span class="player-count" id="playerCount">共 0 个玩家</span>
+                </div>
+                <div class="footer-actions">
+                    <button class="btn-secondary" onclick="closePlayerSwitcherModal()">
+                        取消
+                    </button>
+                    <button class="btn-primary" onclick="openPlayerManagement()">
+                        玩家管理
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/player_switcher_modal.js') }}?v={{ range(1000, 9999) | random }}"></script>
+</body>
+</html>

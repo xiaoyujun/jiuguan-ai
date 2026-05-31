@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能世界书 - 关键词管理</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/keyword_worldbook.css') }}">
+</head>
+<body>
+    <div class="worldbook-container">
+        <!-- 页面标题 -->
+        <div class="worldbook-header">
+            <div class="header-content">
+                <h1>智能世界书</h1>
+                <p class="header-subtitle">基于关键词的智能内容注入系统</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-primary" onclick="createNewEntry()">
+                    ✦ 创建条目
+                </button>
+                <button class="btn-secondary" onclick="showBatchImportModal()">
+                    📥 批量导入
+                </button>
+                <button class="btn-secondary" onclick="window.location.href='/'">
+                    ← 返回主页
+                </button>
+            </div>
+        </div>
+
+        <!-- 搜索和筛选区域 -->
+        <div class="search-filter-section">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="搜索条目名称、描述或关键词..." 
+                       onkeyup="handleSearchInput()">
+                <button class="search-btn" onclick="performSearch()">🔍</button>
+            </div>
+            
+            <div class="filter-box">
+                <select id="category-filter" onchange="performSearch()">
+                    <option value="">所有分类</option>
+                </select>
+                <button class="clear-filter-btn" onclick="clearFilters()">清除筛选</button>
+            </div>
+            
+            <div class="view-toggle">
+                <button class="view-btn active" data-view="grid" onclick="toggleView('grid')">
+                    ⊞ 网格视图
+                </button>
+                <button class="view-btn" data-view="list" onclick="toggleView('list')">
+                    ☰ 列表视图
+                </button>
+            </div>
+        </div>
+
+        <!-- 统计信息和批量操作栏 -->
+        <div class="stats-section">
+            <div class="stats-left">
+                <div class="stat-item">
+                    <span class="stat-label">总条目数</span>
+                    <span class="stat-value" id="total-count">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">已启用</span>
+                    <span class="stat-value" id="enabled-count">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">分类数</span>
+                    <span class="stat-value" id="category-count">0</span>
+                </div>
+            </div>
+            <div class="batch-action-bar" id="batch-action-bar" style="display: none;">
+                <div class="selected-info">
+                    <span>已选中 <strong id="selected-count">0</strong> 个条目</span>
+                </div>
+                <div class="batch-actions">
+                    <button class="btn-sm btn-primary" onclick="exportSelectedFromList()">📤 导出选中</button>
+                    <button class="btn-sm btn-success" onclick="enableSelectedFromList()">✅ 启用选中</button>
+                    <button class="btn-sm btn-warning" onclick="disableSelectedFromList()">⏸️ 禁用选中</button>
+                    <button class="btn-sm btn-secondary" onclick="clearSelection()">✖️ 清除选择</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 批量选择控制栏 -->
+        <div class="selection-control-bar">
+            <div class="selection-checkbox">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll()">
+                    <span class="checkmark"></span>
+                    <span class="checkbox-label">全选当前页</span>
+                </label>
+            </div>
+            <div class="quick-actions">
+                <button class="btn-text" onclick="selectAllInView()">全选</button>
+                <button class="btn-text" onclick="deselectAllInView()">取消</button>
+                <button class="btn-text" onclick="invertSelectionInView()">反选</button>
+            </div>
+        </div>
+
+        <!-- 条目列表 -->
+        <div class="worldbook-content">
+            <div class="entries-container" id="entries-container">
+                <div class="loading-placeholder">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">正在加载智能世界书...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑模态框 -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">编辑条目</h2>
+                <button class="close-btn" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="entry-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="entry-name">条目名称 *</label>
+                            <input type="text" id="entry-name" name="entry-name" required 
+                                   placeholder="输入条目名称">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="entry-category">分类</label>
+                            <input type="text" id="entry-category" name="entry-category" 
+                                   placeholder="默认" list="category-suggestions">
+                            <datalist id="category-suggestions"></datalist>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="entry-priority">优先级</label>
+                            <select id="entry-priority" name="entry-priority">
+                                <option value="1">低 (1)</option>
+                                <option value="2">中 (2)</option>
+                                <option value="3">高 (3)</option>
+                                <option value="4">很高 (4)</option>
+                                <option value="5">最高 (5)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="entry-trigger-mode">触发模式</label>
+                            <select id="entry-trigger-mode" name="entry-trigger-mode" onchange="handleTriggerModeChange()">
+                                <option value="keyword">关键词触发</option>
+                                <option value="always">全局生效</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="entry-enabled" name="entry-enabled" checked>
+                                <span class="checkmark"></span>
+                                启用此条目
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="keywords-section">
+                        <label for="entry-keywords">关键词</label>
+                        <div class="keywords-input-container">
+                            <input type="text" id="keyword-input" placeholder="输入关键词后按回车添加">
+                            <div class="keywords-list" id="keywords-list"></div>
+                        </div>
+                        <div class="form-hint" id="keywords-hint">用户在聊天中提到这些关键词时，此条目将被注入给AI</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="entry-description">描述内容 *</label>
+                        <textarea id="entry-description" name="entry-description" rows="6" 
+                                  placeholder="详细描述这个条目的内容，AI将根据此描述理解相关信息..." required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" onclick="saveEntry()">保存</button>
+                <button class="btn-secondary" onclick="closeEditModal()">取消</button>
+                <button class="btn-danger" id="delete-btn" onclick="deleteEntry()" style="display: none;">删除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认删除模态框 -->
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content small">
+            <div class="modal-header">
+                <h2>确认删除</h2>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除条目 "<span id="delete-entry-name"></span>" 吗？</p>
+                <p class="warning-text">此操作无法撤销！</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-danger" onclick="confirmDelete()">确认删除</button>
+                <button class="btn-secondary" onclick="closeConfirmModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 关键词测试模态框 -->
+    <div id="test-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>关键词匹配测试</h2>
+                <button class="close-btn" onclick="closeTestModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="test-text">测试文本</label>
+                    <textarea id="test-text" placeholder="输入一段文本来测试关键词匹配..." rows="4"></textarea>
+                </div>
+                <button class="btn-primary" onclick="performKeywordTest()">测试匹配</button>
+                
+                <div id="test-results" class="test-results" style="display: none;">
+                    <h3>匹配结果</h3>
+                    <div id="test-output"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 批量导入模态框 -->
+    <div id="batch-import-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>批量导入</h2>
+                <button class="close-btn" onclick="closeBatchImportModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="batch-section">
+                    <p class="section-desc">从JSON文件导入条目，可以导入之前导出的世界书数据</p>
+                    <div class="batch-buttons">
+                        <input type="file" id="import-file" accept=".json" style="display: none;" onchange="handleImportFile(event)">
+                        <button class="btn-primary" onclick="document.getElementById('import-file').click()">📁 选择文件导入</button>
+                    </div>
+                    <div id="import-preview" class="import-preview" style="display: none;">
+                        <h4>导入预览</h4>
+                        <div id="import-preview-content"></div>
+                        <div class="import-mode-selector">
+                            <label>
+                                <input type="radio" name="import-mode" value="skip" checked>
+                                跳过已存在的条目
+                            </label>
+                            <label>
+                                <input type="radio" name="import-mode" value="overwrite">
+                                覆盖已存在的条目
+                            </label>
+                        </div>
+                        <button class="btn-primary" onclick="confirmImport()">确认导入</button>
+                        <button class="btn-secondary" onclick="cancelImport()">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 浮动操作按钮 -->
+    <div class="fab-container">
+        <button class="fab-main" onclick="toggleFabMenu()">+</button>
+        <div class="fab-menu" id="fab-menu">
+            <button class="fab-item" onclick="createNewEntry()" title="创建条目">✦</button>
+            <button class="fab-item" onclick="showTestModal()" title="测试匹配">🧪</button>
+            <button class="fab-item" onclick="exportAllEntries()" title="导出全部">📤</button>
+        </div>
+    </div>
+
+    <!-- 移动端底部操作栏 -->
+    <div class="mobile-bottom-bar" id="mobile-bottom-bar">
+        <button class="bottom-bar-btn" onclick="createNewEntry()">
+            <span class="btn-icon">✦</span>
+            <span class="btn-text">创建</span>
+        </button>
+        <button class="bottom-bar-btn" onclick="showTestModal()">
+            <span class="btn-icon">🧪</span>
+            <span class="btn-text">测试</span>
+        </button>
+        <button class="bottom-bar-btn" onclick="exportAllEntries()">
+            <span class="btn-icon">📤</span>
+            <span class="btn-text">导出</span>
+        </button>
+        <button class="bottom-bar-btn" onclick="window.location.href='/'">
+            <span class="btn-icon">🏠</span>
+            <span class="btn-text">主页</span>
+        </button>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/keyword_worldbook.js') }}"></script>
+</body>
+</html>

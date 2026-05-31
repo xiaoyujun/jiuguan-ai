@@ -1,0 +1,52 @@
+{# ============================================================
+   base.html — 通用基模板
+   ------------------------------------------------------------
+   提供：
+     1. <!DOCTYPE>、<html lang="zh-CN">、charset、viewport
+     2. 标题区 (title 块)
+     3. 通用 head 资源插槽 (head_extra 块)
+     4. 通用样式插槽 (styles 块) + 顶层 base/components/layout 资源
+     5. body class 插槽 (body_class 块)
+     6. body 内容主插槽 (content 块)
+     7. 通用脚本插槽 (scripts 块)
+
+   渐进式接入策略：
+     - 新页面直接使用 {% extends "layouts/base.html" %}
+     - 旧页面可保留原写法，不强制迁移
+     - 如有页面级 CSS/JS，在子模板内 {% block %} 内追加
+   ============================================================ #}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0{% block viewport_extra %}{% endblock %}">
+    <meta name="theme-color" content="{% block theme_color %}#1a1a1a{% endblock %}">
+    {% block meta_extra %}{% endblock %}
+
+    <title>{% block title %}神秘学编年史{% endblock %}</title>
+
+    {# 全局公共样式 —— 子模板可在 styles 块前后追加，不应覆盖 #}
+    {% block base_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    {% endblock %}
+
+    {# 页面级样式插槽 #}
+    {% block styles %}{% endblock %}
+
+    {% block head_extra %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    {% block body_top %}{% endblock %}
+
+    {% block content %}{% endblock %}
+
+    {% block body_bottom %}{% endblock %}
+
+    {# 通用脚本插槽 —— 当前为空，后续接入 modal_manager 等共享模块时在此引入 #}
+    {% block base_scripts %}{% endblock %}
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

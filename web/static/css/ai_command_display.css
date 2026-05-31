@@ -1,0 +1,98 @@
+/**
+ * 角括号内容折叠显示组件样式（橙色主题）
+ * 基于现有的data-section样式，用于显示<>内容
+ */
+
+/* 角括号内容区域橙色主题 */
+.angle-bracket-section {
+    background: linear-gradient(145deg, rgba(255, 165, 0, 0.03), rgba(255, 140, 0, 0.01));
+    border: 1px solid rgba(255, 140, 0, 0.15);
+}
+
+.angle-bracket-section::before {
+    background: linear-gradient(145deg, transparent, rgba(255, 140, 0, 0.02));
+}
+
+.angle-bracket-section:hover::before {
+    opacity: 1;
+    background: linear-gradient(145deg, transparent, rgba(255, 140, 0, 0.03));
+}
+
+.angle-bracket-section.collapsed {
+    background: linear-gradient(145deg, rgba(255, 165, 0, 0.015), rgba(255, 140, 0, 0.005));
+}
+
+/* 角括号内容切换按钮橙色主题 */
+.angle-bracket-toggle {
+    border-bottom: 1px solid rgba(255, 140, 0, 0.12);
+    background: linear-gradient(135deg, rgba(255, 165, 0, 0.05), rgba(255, 140, 0, 0.02));
+}
+
+.angle-bracket-toggle::after {
+    background: linear-gradient(90deg, rgba(255, 140, 0, 0.4), transparent);
+}
+
+.angle-bracket-toggle:hover {
+    background: linear-gradient(135deg, rgba(255, 165, 0, 0.08), rgba(255, 140, 0, 0.04));
+}
+
+.angle-bracket-toggle .data-toggle-text {
+    color: rgba(255, 119, 0, 0.85);
+}
+
+.angle-bracket-toggle .data-toggle-text::before {
+    background: rgba(255, 140, 0, 0.8);
+}
+
+.angle-bracket-section:not(.collapsed) .angle-bracket-toggle .data-toggle-text::before {
+    background: #ff8c00;
+    box-shadow: 0 0 6px rgba(255, 140, 0, 0.4);
+}
+
+.angle-bracket-toggle .data-toggle-icon {
+    color: rgba(255, 140, 0, 0.6);
+}
+
+.angle-bracket-section.collapsed .angle-bracket-toggle .data-toggle-icon {
+    color: rgba(255, 140, 0, 0.4);
+}
+
+/* 角括号内容区域橙色主题 */
+.angle-bracket-content {
+    background: linear-gradient(180deg, rgba(255, 140, 0, 0.08), rgba(255, 140, 0, 0.12));
+}
+
+/* 角括号内容样式 - 使用橙色主题 */
+.angle-bracket-text {
+    margin: 8px 0;
+    padding: 12px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.85);
+    background: linear-gradient(135deg, rgba(255, 140, 0, 0.1), rgba(255, 165, 0, 0.05));
+    border-radius: 6px;
+    border-left: 3px solid rgba(255, 140, 0, 0.4);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    position: relative;
+}
+
+.angle-bracket-text::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(255, 140, 0, 0.3), rgba(255, 140, 0, 0.1));
+    border-radius: 0 3px 3px 0;
+}
+
+/* 响应式设计 - 遵循原有data-section的设计 */
+@media (max-width: 768px) {
+    .angle-bracket-text {
+        font-size: 12px;
+        padding: 10px;
+    }
+}

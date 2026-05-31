@@ -1,0 +1,256 @@
+/* 自动指令相关样式 */
+
+/* 自动生成消息的样式 */
+.message.auto-generated {
+    border-left: 3px solid #4CAF50;
+    background-color: rgba(76, 175, 80, 0.05);
+    position: relative;
+}
+
+.message.auto-generated::before {
+    content: "🤖";
+    position: absolute;
+    top: 8px;
+    left: -15px;
+    background: #4CAF50;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+}
+
+/* 自动生成标识 */
+.auto-badge {
+    background: #4CAF50;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    margin-left: 8px;
+    font-weight: bold;
+}
+
+/* 消息头部样式 */
+.message-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #666;
+}
+
+.message-header .sender {
+    font-weight: bold;
+    color: #333;
+}
+
+.message-header .timestamp {
+    margin-left: auto;
+    color: #999;
+}
+
+/* 消息内容样式 */
+.message-content {
+    line-height: 1.5;
+    color: #333;
+    word-wrap: break-word;
+}
+
+/* 渐入动画 */
+.fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 通知样式 */
+.auto-command-notification {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.auto-command-notification.info {
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+}
+
+.auto-command-notification.success {
+    background: linear-gradient(135deg, #4CAF50, #388E3C);
+}
+
+.auto-command-notification.warning {
+    background: linear-gradient(135deg, #FF9800, #F57C00);
+}
+
+.auto-command-notification.error {
+    background: linear-gradient(135deg, #F44336, #D32F2F);
+}
+
+/* 自动指令帮助提示样式 */
+.auto-command-help {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+    font-size: 14px;
+}
+
+.auto-command-help h4 {
+    margin: 0 0 12px 0;
+    color: #495057;
+    font-size: 16px;
+}
+
+.auto-command-help ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.auto-command-help li {
+    margin: 4px 0;
+    color: #6c757d;
+}
+
+.auto-command-help code {
+    background: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    color: #d63384;
+}
+
+/* 聊天输入框增强样式 */
+.chat-input-container {
+    position: relative;
+}
+
+.auto-command-indicator {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #4CAF50;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.chat-input-container.auto-command-detected .auto-command-indicator {
+    opacity: 1;
+}
+
+/* 处理中状态样式 */
+.auto-command-processing {
+    position: relative;
+    overflow: hidden;
+}
+
+.auto-command-processing::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(76, 175, 80, 0.3), transparent);
+    animation: processing 2s infinite;
+}
+
+@keyframes processing {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .auto-command-notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        transform: translateY(-100%);
+    }
+    
+    .auto-command-notification.show {
+        transform: translateY(0);
+    }
+    
+    .message.auto-generated::before {
+        left: -12px;
+        width: 16px;
+        height: 16px;
+        font-size: 8px;
+    }
+    
+    .auto-badge {
+        font-size: 9px;
+        padding: 1px 6px;
+    }
+}
+
+/* 暗色主题支持 */
+@media (prefers-color-scheme: dark) {
+    .message.auto-generated {
+        background-color: rgba(76, 175, 80, 0.1);
+        border-left-color: #66BB6A;
+    }
+    
+    .message-header .sender {
+        color: #e0e0e0;
+    }
+    
+    .message-content {
+        color: #e0e0e0;
+    }
+    
+    .auto-command-help {
+        background: #2a2a2a;
+        border-color: #404040;
+        color: #e0e0e0;
+    }
+    
+    .auto-command-help h4 {
+        color: #e0e0e0;
+    }
+    
+    .auto-command-help code {
+        background: #404040;
+        color: #f48fb1;
+    }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+    .message.auto-generated {
+        border-left-width: 5px;
+        background-color: rgba(76, 175, 80, 0.2);
+    }
+    
+    .auto-badge {
+        background: #2E7D32;
+        border: 1px solid #1B5E20;
+    }
+    
+    .auto-command-notification {
+        border-width: 2px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+}

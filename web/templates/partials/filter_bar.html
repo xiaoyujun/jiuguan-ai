@@ -1,0 +1,27 @@
+{# ============================================================
+   partials/filter_bar.html
+   ------------------------------------------------------------
+   通用筛选栏：可配置 select / clear 按钮 / 自定义额外筛选项。
+
+   参数：
+     - filters: list of dict, 每个含 {id, label, options:[{value,text,selected?}]}
+     - clear_btn_id: 清除按钮 id (可选)
+     - clear_label: 清除按钮文案
+   ============================================================ #}
+<div class="page-toolbar__filters">
+    {% for filter in filters|default([]) %}
+    <label class="filter-bar__field">
+        {% if filter.label %}<span class="filter-bar__label">{{ filter.label }}</span>{% endif %}
+        <select id="{{ filter.id }}" class="form-control filter-bar__select">
+            {% for opt in filter.options|default([]) %}
+            <option value="{{ opt.value }}"{% if opt.selected %} selected{% endif %}>{{ opt.text }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    {% endfor %}
+    {% if clear_btn_id %}
+    <button type="button" class="btn btn--ghost btn--sm" id="{{ clear_btn_id }}">
+        {{ clear_label|default('清除筛选') }}
+    </button>
+    {% endif %}
+</div>

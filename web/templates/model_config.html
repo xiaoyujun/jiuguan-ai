@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模型与供应商配置中心</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/model_config_page.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="mc-page">
+        <!-- 顶部导航 -->
+        <header class="mc-topbar">
+            <a class="mc-back" href="/" title="返回主页">
+                <i class="fas fa-arrow-left"></i>
+                <span>返回主页</span>
+            </a>
+            <div class="mc-topbar__title">
+                <span class="mc-eyebrow">AI Provider Hub</span>
+                <h1>模型与供应商配置</h1>
+            </div>
+            <div class="mc-topbar__actions">
+                <button class="mc-btn mc-btn--ghost" type="button" onclick="openProviderModal()">
+                    <i class="fas fa-plug"></i>
+                    新建供应商
+                </button>
+                <button class="mc-btn mc-btn--primary" type="button" onclick="openModelModal()">
+                    <i class="fas fa-plus"></i>
+                    新建模型
+                </button>
+            </div>
+        </header>
+
+        <!-- 概览条 -->
+        <section class="mc-stats">
+            <article class="mc-stat">
+                <span class="mc-stat__icon"><i class="fas fa-plug"></i></span>
+                <div>
+                    <span class="mc-stat__label">供应商</span>
+                    <strong id="providerCount">0</strong>
+                </div>
+            </article>
+            <article class="mc-stat">
+                <span class="mc-stat__icon"><i class="fas fa-microchip"></i></span>
+                <div>
+                    <span class="mc-stat__label">模型</span>
+                    <strong id="modelCount">0</strong>
+                </div>
+            </article>
+            <article class="mc-stat mc-stat--current">
+                <span class="mc-stat__icon"><i class="fas fa-star"></i></span>
+                <div>
+                    <span class="mc-stat__label">当前聊天模型</span>
+                    <strong id="currentModelName">未设置</strong>
+                    <small id="currentModelMeta">可在聊天页快速切换</small>
+                </div>
+            </article>
+        </section>
+
+        <!-- 分层配置（高频操作，置顶） -->
+        <section class="mc-section">
+            <header class="mc-section__head">
+                <div>
+                    <h2><i class="fas fa-layer-group"></i> 功能分层</h2>
+                    <p>不同场景使用不同等级的模型；高性能模型会同步为聊天页的当前模型。</p>
+                </div>
+            </header>
+            <form id="tierForm" class="mc-tier-grid">
+                <label class="mc-tier" data-tier="high">
+                    <span class="mc-tier__rank">高</span>
+                    <span class="mc-tier__title">高性能模型</span>
+                    <span class="mc-tier__desc">聊天 · 旁白 · 总结 · 故事创建</span>
+                    <select id="highTierSelect" name="high_performance" class="mc-input"></select>
+                </label>
+                <label class="mc-tier" data-tier="medium">
+                    <span class="mc-tier__rank">中</span>
+                    <span class="mc-tier__title">中级模型</span>
+                    <span class="mc-tier__desc">AI 指令 · 数据整理 · 临时分析</span>
+                    <select id="mediumTierSelect" name="medium_performance" class="mc-input"></select>
+                </label>
+                <label class="mc-tier" data-tier="low">
+                    <span class="mc-tier__rank">低</span>
+                    <span class="mc-tier__title">低级模型</span>
+                    <span class="mc-tier__desc">基础分析 · 简单过滤</span>
+                    <select id="lowTierSelect" name="low_performance" class="mc-input"></select>
+                </label>
+                <div class="mc-tier__save">
+                    <button class="mc-btn mc-btn--primary" type="submit">
+                        <i class="fas fa-save"></i>
+                        保存分层配置
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- 供应商分组（每个供应商展开其下挂载的模型） -->
+        <section class="mc-section">
+            <header class="mc-section__head">
+                <div>
+                    <h2><i class="fas fa-sitemap"></i> 供应商与模型</h2>
+                    <p>一个供应商收拢基础地址与密钥，下属模型只保留显示名与模型 ID。</p>
+                </div>
+                <div class="mc-section__actions">
+                    <button class="mc-btn mc-btn--ghost mc-btn--sm" type="button" onclick="openProviderModal()">
+                        <i class="fas fa-plus"></i>
+                        新建供应商
+                    </button>
+                </div>
+            </header>
+            <div id="providerList" class="mc-provider-list"></div>
+        </section>
+    </div>
+
+    <!-- 供应商弹窗 -->
+    <div id="providerModal" class="mc-modal">
+        <div class="mc-modal__card">
+            <header class="mc-modal__head">
+                <div>
+                    <h3 id="providerModalTitle">添加供应商</h3>
+                    <p>一个供应商可以挂多个模型，避免重复填写基础信息。</p>
+                </div>
+                <button class="mc-modal__close" type="button" onclick="closeProviderModal()" aria-label="关闭">
+                    <i class="fas fa-times"></i>
+                </button>
+            </header>
+            <form id="providerForm" class="mc-form">
+                <label class="mc-field">
+                    <span>供应商标识</span>
+                    <input id="providerKey" class="mc-input" name="provider_key" type="text" placeholder="留空自动生成">
+                </label>
+                <label class="mc-field">
+                    <span>供应商名称</span>
+                    <input id="providerName" class="mc-input" name="name" type="text" placeholder="例如 OpenAI / SiliconFlow" required>
+                </label>
+                <label class="mc-field">
+                    <span>基础 URL</span>
+                    <input id="providerBaseUrl" class="mc-input" name="base_url" type="url" placeholder="https://api.openai.com/v1" required>
+                </label>
+                <label class="mc-field">
+                    <span>API Key</span>
+                    <input id="providerApiKey" class="mc-input" name="api_key" type="password" placeholder="sk-...">
+                </label>
+            </form>
+            <footer class="mc-modal__foot">
+                <button class="mc-btn mc-btn--ghost" type="button" onclick="closeProviderModal()">取消</button>
+                <button class="mc-btn mc-btn--primary" type="button" onclick="saveProvider()">
+                    <i class="fas fa-save"></i>
+                    保存供应商
+                </button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- 模型弹窗 -->
+    <div id="modelModal" class="mc-modal">
+        <div class="mc-modal__card mc-modal__card--wide">
+            <header class="mc-modal__head">
+                <div>
+                    <h3 id="modelModalTitle">添加模型</h3>
+                    <p>基础项只保留供应商、模型 ID 与显示名；高级参数可选填写。</p>
+                </div>
+                <button class="mc-modal__close" type="button" onclick="closeModelModal()" aria-label="关闭">
+                    <i class="fas fa-times"></i>
+                </button>
+            </header>
+            <form id="modelForm" class="mc-form">
+                <div class="mc-form__row">
+                    <label class="mc-field">
+                        <span>模型标识</span>
+                        <input id="modelKey" class="mc-input" name="model_key" type="text" placeholder="留空自动生成">
+                    </label>
+                    <label class="mc-field">
+                        <span>显示名称</span>
+                        <input id="modelName" class="mc-input" name="name" type="text" placeholder="例如 GPT-4o / DeepSeek V3">
+                    </label>
+                </div>
+
+                <div class="mc-form__row">
+                    <label class="mc-field">
+                        <span>所属供应商</span>
+                        <select id="modelProviderKey" class="mc-input" name="provider_key" required></select>
+                    </label>
+                    <div class="mc-field">
+                        <span>从供应商拉取</span>
+                        <div class="mc-fetch">
+                            <button class="mc-btn mc-btn--ghost mc-btn--sm" type="button" onclick="fetchModelsForSelectedProvider()">
+                                <i class="fas fa-cloud-download-alt"></i>
+                                读取
+                            </button>
+                            <select id="providerModelOptions" class="mc-input" onchange="applyFetchedModel(this.value)">
+                                <option value="">读取后选择</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <label class="mc-field">
+                    <span>模型 ID</span>
+                    <input id="modelIdentifier" class="mc-input" list="providerModelDatalist" type="text" name="model" placeholder="例如 gpt-4o-mini / deepseek-ai/DeepSeek-V3" required>
+                    <datalist id="providerModelDatalist"></datalist>
+                </label>
+
+                <label class="mc-toggle">
+                    <input id="modelStream" name="stream" type="checkbox" checked>
+                    <span class="mc-toggle__track"></span>
+                    <span class="mc-toggle__label">启用流式输出</span>
+                </label>
+
+                <div class="mc-advanced">
+                    <button class="mc-advanced__toggle" id="advancedToggle" type="button" onclick="toggleAdvancedSettings()">
+                        <i class="fas fa-sliders-h"></i>
+                        高级参数（可选）
+                        <i class="fas fa-chevron-down mc-advanced__chevron"></i>
+                    </button>
+                    <div id="advancedFields" class="mc-advanced__body hidden">
+                        <div class="mc-form__row mc-form__row--3">
+                            <label class="mc-field">
+                                <span>温度</span>
+                                <input id="modelTemperature" class="mc-input" name="temperature" type="number" min="0" max="2" step="0.1" placeholder="留空使用默认">
+                            </label>
+                            <label class="mc-field">
+                                <span>最大输出 Token</span>
+                                <input id="modelMaxTokens" class="mc-input" name="max_tokens" type="number" min="1" step="1" placeholder="留空自动">
+                            </label>
+                            <label class="mc-field">
+                                <span>上下文预算</span>
+                                <input id="modelContextWindow" class="mc-input" name="context_window" type="number" min="1" step="1" placeholder="本地预算估算">
+                            </label>
+                        </div>
+                        <div class="mc-form__row mc-form__row--3">
+                            <label class="mc-field">
+                                <span>Top P</span>
+                                <input id="modelTopP" class="mc-input" name="top_p" type="number" min="0" max="1" step="0.05" placeholder="留空自动">
+                            </label>
+                            <label class="mc-field">
+                                <span>Presence Penalty</span>
+                                <input id="modelPresencePenalty" class="mc-input" name="presence_penalty" type="number" min="-2" max="2" step="0.1" placeholder="留空自动">
+                            </label>
+                            <label class="mc-field">
+                                <span>Frequency Penalty</span>
+                                <input id="modelFrequencyPenalty" class="mc-input" name="frequency_penalty" type="number" min="-2" max="2" step="0.1" placeholder="留空自动">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <footer class="mc-modal__foot">
+                <button class="mc-btn mc-btn--ghost" type="button" onclick="closeModelModal()">取消</button>
+                <button class="mc-btn mc-btn--ghost" type="button" onclick="testModelFromForm()">
+                    <i class="fas fa-vial"></i>
+                    测试连接
+                </button>
+                <button class="mc-btn mc-btn--primary" type="button" onclick="saveModel()">
+                    <i class="fas fa-save"></i>
+                    保存模型
+                </button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- 测试结果弹窗 -->
+    <div id="resultModal" class="mc-modal">
+        <div class="mc-modal__card">
+            <header class="mc-modal__head">
+                <div><h3>测试结果</h3></div>
+                <button class="mc-modal__close" type="button" onclick="closeResultModal()" aria-label="关闭">
+                    <i class="fas fa-times"></i>
+                </button>
+            </header>
+            <div id="resultContent" class="mc-result"></div>
+            <footer class="mc-modal__foot">
+                <button class="mc-btn mc-btn--ghost" type="button" onclick="closeResultModal()">关闭</button>
+            </footer>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/model_config_page.js') }}"></script>
+</body>
+</html>

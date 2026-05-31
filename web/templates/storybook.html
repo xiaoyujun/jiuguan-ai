@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据书典籍管理</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/storybook.css') }}">
+</head>
+<body>
+    <a href="/" class="back-to-main">← 返回聊天</a>
+    <a href="/password_settings" class="password-settings-link">🔒 密码设置</a>
+    
+    <div class="storybook-container">
+        <div class="storybook-header">
+            <h1>📚 数据书典籍</h1>
+            <p>管理您的数据世界，记录秘教传说</p>
+        </div>
+        
+        <div class="controls-section">
+            <div class="search-filter-section">
+                <input type="text" id="story-search" placeholder="搜索数据书..." class="search-input">
+                <select id="tag-filter" class="tag-filter">
+                    <option value="">所有标签</option>
+                </select>
+            </div>
+            
+            <!-- 选择控制区域 -->
+            <div class="selection-controls">
+                <div class="selection-info">
+                    <span id="selection-counter">已选择: 0</span>
+                </div>
+                <div class="selection-buttons">
+                    <button class="selection-btn" onclick="selectAllVisibleStories()" title="全选当前显示的数据书">全选</button>
+                    <button class="selection-btn" onclick="invertSelection()" title="反选当前显示的数据书">反选</button>
+                    <button class="selection-btn" onclick="clearSelection()" title="清空所有选择">清空</button>
+                    <button class="selection-btn ai-organize-selected-btn" onclick="showAIOrganizeSelectedDialog()" title="AI智能整理选中的数据书">🤖 AI整理</button>
+                    <button class="selection-btn export-selected-btn" onclick="exportSelectedStories()" title="导出选中的数据书">导出选中</button>
+                </div>
+            </div>
+            <div class="action-buttons-wrapper">
+                <div class="action-buttons-header" onclick="toggleActionButtons()">
+                    <span class="collapse-toggle collapsed">▶</span>
+                    <h4>📝 操作面板</h4>
+                </div>
+                <div class="action-buttons collapsed" id="action-buttons">
+                    <button class="action-btn create-btn" onclick="showCreateStoryDialog()">
+                        ➕ 新的数据书
+                    </button>
+                    <button class="action-btn" onclick="showImportDialog()">
+                        📥 导入数据书
+                    </button>
+                    <button class="action-btn cleanup-btn" onclick="showEventCleanupDialog()">
+                        🧹 事件清理
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="loading" class="loading" style="display: none;">
+            正在加载数据书典籍...
+        </div>
+        
+        <div class="story-grid" id="stories-grid">
+            <!-- 数据书卡片将通过JavaScript动态加载 -->
+        </div>
+        
+        <div id="no-stories" class="no-stories" style="display: none;">
+            <h3>📜 暂无编年史</h3>
+            <p>开始铭刻您的第一个数据书吧！</p>
+        </div>
+    </div>
+
+    <!-- 编辑面板 - 全屏优化版本 -->
+    <div id="edit-panel" class="edit-panel">
+        <div class="edit-panel-content">
+            <div class="edit-panel-header">
+                <h2 id="edit-title">编年史锻造</h2>
+                <button class="edit-panel-close" onclick="closeEditPanel()" title="关闭编辑面板">×</button>
+            </div>
+            <div class="edit-panel-body">
+                <div id="edit-form">
+                    <!-- 编辑表单将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/storybook_editor_shared.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/story_editor.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/storybook.js') }}"></script>
+</body>
+</html>

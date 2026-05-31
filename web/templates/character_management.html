@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角色管理中心 - 神秘学系统</title>
+    <!-- 通用样式 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/scrollbar-common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-common.css') }}">
+    <!-- 页面特定样式 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/character_management.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/storybook_management.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="character-management-container">
+        <!-- 顶部导航栏 -->
+        <header class="management-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <i class="fas fa-theater-masks header-icon"></i>
+                    <h1 class="page-title">角色管理中心</h1>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-success" id="import-character-btn">
+                        <i class="fas fa-upload"></i>
+                        导入角色
+                    </button>
+                    <button class="btn btn-warning" id="export-character-btn">
+                        <i class="fas fa-download"></i>
+                        导出角色
+                    </button>
+                    <button class="btn btn-primary" id="create-character-btn">
+                        <i class="fas fa-plus"></i>
+                        创建新角色
+                    </button>
+                    <a href="/" class="btn btn-secondary">
+                        <i class="fas fa-home"></i>
+                        返回首页
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- 工具栏 -->
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="search-input" placeholder="搜索角色..." class="search-input">
+                </div>
+                <div class="filter-container">
+                    <select id="category-filter" class="filter-select">
+                        <option value="">全部类别</option>
+                        <option value="npc">NPC角色</option>
+                        <option value="narrator">旁白角色</option>
+                    </select>
+                </div>
+                <div class="filter-container">
+                    <select id="tag-filter" class="filter-select">
+                        <option value="">全部标签</option>
+                        <!-- 标签选项将通过JavaScript动态生成 -->
+                    </select>
+                </div>
+            </div>
+            <div class="toolbar-right">
+                <div class="view-toggle">
+                    <button class="view-btn active" data-view="grid" title="网格视图">
+                        <i class="fas fa-th-large"></i>
+                    </button>
+                    <button class="view-btn" data-view="list" title="列表视图">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+                <div class="sort-container">
+                    <select id="sort-select" class="sort-select">
+                        <option value="name">按名称排序</option>
+                        <option value="created">按创建时间</option>
+                        <option value="modified">按修改时间</option>
+                        <option value="category">按类别排序</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- 角色列表容器 -->
+        <div class="characters-container">
+            <div id="characters-grid" class="characters-grid">
+                <!-- 角色卡片将通过JavaScript动态生成 -->
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>加载角色数据中...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 批量操作工具栏 -->
+        <div class="batch-toolbar" id="batch-toolbar" style="display: none;">
+            <div class="batch-info">
+                <span id="selected-count">0</span> 个角色已选中
+            </div>
+            <div class="batch-actions">
+                <button class="btn btn-warning" id="batch-export-btn">
+                    <i class="fas fa-download"></i>
+                    批量导出
+                </button>
+                <button class="btn btn-danger" id="batch-delete-btn">
+                    <i class="fas fa-trash"></i>
+                    批量删除
+                </button>
+                <button class="btn btn-secondary" id="clear-selection-btn">
+                    <i class="fas fa-times"></i>
+                    取消选择
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建/编辑角色模态框 -->
+    <div id="character-modal" class="modal">
+        <div class="modal-content character-modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">创建新角色</h3>
+                <button class="close-btn" id="close-modal-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="character-form" class="character-form">
+                <div class="form-tabs">
+                    <button type="button" class="tab-btn active" data-tab="basic">基本信息</button>
+                    <button type="button" class="tab-btn" data-tab="introduction" style="display: none;">场景描述</button>
+                    <button type="button" class="tab-btn" data-tab="storybook" style="display: none;">数据书</button>
+                    <button type="button" class="tab-btn" data-tab="role-binding" style="display: none;">角色捆绑</button>
+                </div>
+
+                <!-- 基本信息标签页 -->
+                <div class="tab-content active" data-tab="basic">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="character-name">角色名称 *</label>
+                            <input type="text" id="character-name" class="form-input" placeholder="输入角色名称" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">角色类别</label>
+                            <div class="category-selector">
+                                <div class="category-options">
+                                    <div class="category-option active" data-category="npc">
+                                        <div class="category-icon">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div class="category-info">
+                                            <h4>NPC角色</h4>
+                                            <p>使用AI生成数据书的智能角色，支持复杂对话交互</p>
+                                        </div>
+                                        <div class="category-features">
+                                            <span class="feature-tag">AI生成数据书</span>
+                                            <span class="feature-tag">智能对话</span>
+                                            <span class="feature-tag">无角色捆绑</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="category-option" data-category="narrator">
+                                        <div class="category-icon">
+                                            <i class="fas fa-theater-masks"></i>
+                                        </div>
+                                        <div class="category-info">
+                                            <h4>场景类型</h4>
+                                            <p>多人对话协调器，通过简介和角色捆绑实现群聊</p>
+                                        </div>
+                                        <div class="category-features">
+                                            <span class="feature-tag">场景简介</span>
+                                            <span class="feature-tag">角色捆绑</span>
+                                            <span class="feature-tag">群聊协调</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 隐藏的传统select，用于表单提交 -->
+                                <select id="character-category" class="form-select" style="display: none;">
+                                    <option value="npc" selected>NPC角色</option>
+                                    <option value="narrator">旁白角色</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 旁白角色特殊配置 -->
+                    <div id="narrator-config" class="narrator-config" style="display: none;">
+                        <div class="form-group">
+                            <div class="narrator-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>旁白角色说明：</strong>
+                                <p>旁白角色必须捆绑其他角色才能正常工作。当玩家发送消息时，系统会自动在消息前添加@符号，随机选择一个捆绑的角色来回复，从而模拟多人聊天的情景。</p>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" id="narrator-auto-mention" class="form-checkbox" checked>
+                                <i class="fas fa-at"></i>
+                                启用自动@功能
+                            </label>
+                            <p class="form-help-text">启用后，玩家发送的消息会自动添加@捆绑角色，实现自动多人对话</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 旁白角色的简介 -->
+                    <div class="form-group" id="character-intro-group" style="display: none;">
+                        <label class="form-label" for="character-intro">角色简介</label>
+                        <textarea id="character-intro" class="form-textarea" rows="3" placeholder="简要描述这个角色..."></textarea>
+                        <p class="form-help-text">旁白角色的简介，用于描述其在多人对话中的作用和特点</p>
+                    </div>
+                    
+                    <!-- NPC角色的AI生成数据书提示 -->
+                    <div class="form-group" id="npc-storybook-info" style="display: block;">
+                        <div class="npc-info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="info-content">
+                                <h5>NPC角色数据书</h5>
+                                <p>NPC角色将使用AI生成详细的数据书，包含角色属性、背景故事、技能等信息。保存角色后，系统会引导您通过描述来生成数据书。</p>
+                                <div class="info-features">
+                                    <span class="info-tag"><i class="fas fa-magic"></i> AI智能生成</span>
+                                    <span class="info-tag"><i class="fas fa-book"></i> 结构化数据</span>
+                                    <span class="info-tag"><i class="fas fa-brain"></i> 智能记忆</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="character-tags">角色标签</label>
+                        <div class="tags-input-container">
+                            <div class="tags-display" id="tags-display">
+                                <!-- 已添加的标签将在这里显示 -->
+                            </div>
+                            <input type="text" id="character-tags" class="form-input tags-input" placeholder="输入标签名称，按Enter或逗号添加">
+                        </div>
+                        <div class="tags-suggestions" id="tags-suggestions">
+                            <!-- 标签建议将在这里显示 -->
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="character-avatar">角色头像</label>
+                        <div class="avatar-upload-area">
+                            <div class="avatar-preview" id="avatar-preview">
+                                <i class="fas fa-user-circle default-avatar"></i>
+                            </div>
+                            <div class="upload-controls">
+                                <input type="file" id="avatar-input" accept="image/*" style="display: none;">
+                                <button type="button" class="btn btn-outline" id="upload-avatar-btn">
+                                    <i class="fas fa-upload"></i>
+                                    上传头像
+                                </button>
+                                <button type="button" class="btn btn-outline" id="remove-avatar-btn" style="display: none;">
+                                    <i class="fas fa-trash"></i>
+                                    移除头像
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="voice-id">
+                            <i class="fas fa-microphone"></i>
+                            语音ID
+                        </label>
+                        <input type="text" id="voice-id" class="form-input" placeholder="例如：speech:jian:d2ejc5h719ns73evoen0:dujtlginekslwlciukxd">
+                        <p class="form-help-text">设置角色的语音ID，用于语音合成功能</p>
+                    </div>
+                </div>
+
+                <!-- 角色介绍标签页 -->
+                <div class="tab-content" data-tab="introduction">
+                    <div class="introduction-editor-section">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-user-edit"></i>
+                                角色详细介绍
+                            </label>
+                            <p class="form-help-text">在这里编写角色的详细介绍，包括背景故事、性格特征、外貌描述等。这些内容将帮助AI更好地理解和扮演这个角色。</p>
+                            
+                            <div class="introduction-editor">
+                                <div class="editor-toolbar">
+                                    <div class="toolbar-group">
+                                        <button type="button" class="editor-btn" data-action="bold" title="粗体">
+                                            <i class="fas fa-bold"></i>
+                                        </button>
+                                        <button type="button" class="editor-btn" data-action="italic" title="斜体">
+                                            <i class="fas fa-italic"></i>
+                                        </button>
+                                        <button type="button" class="editor-btn" data-action="underline" title="下划线">
+                                            <i class="fas fa-underline"></i>
+                                        </button>
+                                    </div>
+                                    <div class="toolbar-group">
+                                        <button type="button" class="editor-btn" data-action="bullet-list" title="项目符号">
+                                            <i class="fas fa-list-ul"></i>
+                                        </button>
+                                        <button type="button" class="editor-btn" data-action="number-list" title="编号列表">
+                                            <i class="fas fa-list-ol"></i>
+                                        </button>
+                                    </div>
+                                    <div class="toolbar-group">
+                                        <button type="button" class="editor-btn" data-action="clear" title="清除格式">
+                                            <i class="fas fa-eraser"></i>
+                                        </button>
+                                    </div>
+                                    <div class="toolbar-group">
+                                        <span class="word-count" id="intro-word-count">0 字符</span>
+                                    </div>
+                                </div>
+                                
+                                <textarea id="character-introduction" class="form-textarea introduction-textarea" 
+                                          rows="12" 
+                                          placeholder="在这里输入角色的详细介绍...&#10;&#10;你可以包括：&#10;• 角色的背景故事和来历&#10;• 性格特征和行为习惯&#10;• 外貌描述和穿着风格&#10;• 技能特长和兴趣爱好&#10;• 人际关系和社会地位&#10;• 重要经历和成长历程&#10;• 说话风格和口头禅&#10;• 其他特殊设定"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-comments"></i>
+                                开场白
+                            </label>
+                            <p class="form-help-text">设置角色的开场白，这将是角色在对话开始时的第一句话。</p>
+                            <textarea id="character-greeting" class="form-textarea" 
+                                      rows="3" 
+                                      placeholder="输入角色的开场白...&#10;例如：你好！我是[角色名]，很高兴见到你！"></textarea>
+                        </div>
+                        
+                        <div class="introduction-templates">
+                            <h5><i class="fas fa-lightbulb"></i> 快速模板</h5>
+                            <p class="template-description">选择一个模板来快速开始编写角色介绍：</p>
+                            <div class="template-buttons">
+                                <button type="button" class="btn btn-small template-btn" data-template="basic">
+                                    <i class="fas fa-user"></i>
+                                    基础角色模板
+                                </button>
+                                <button type="button" class="btn btn-small template-btn" data-template="fantasy">
+                                    <i class="fas fa-magic"></i>
+                                    奇幻角色模板
+                                </button>
+                                <button type="button" class="btn btn-small template-btn" data-template="modern">
+                                    <i class="fas fa-city"></i>
+                                    现代角色模板
+                                </button>
+                                <button type="button" class="btn btn-small template-btn" data-template="historical">
+                                    <i class="fas fa-landmark"></i>
+                                    历史角色模板
+                                </button>
+                                <button type="button" class="btn btn-small template-btn" data-template="ai-generate">
+                                    <i class="fas fa-robot"></i>
+                                    AI生成模板
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="introduction-preview">
+                            <h5><i class="fas fa-eye"></i> 预览</h5>
+                            <div class="preview-content" id="introduction-preview">
+                                <p class="preview-placeholder">在上方输入角色介绍后，这里会显示预览内容</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数据书标签页 -->
+                <div class="tab-content" data-tab="storybook">
+                    <div class="storybook-header">
+                        <h4><i class="fas fa-robot"></i> AI生成数据书</h4>
+                        <p class="storybook-description">
+                            通过AI智能生成角色的详细数据书，包含角色属性、技能、装备等游戏数据。
+                        </p>
+                    </div>
+
+                    <!-- AI生成数据书区域 -->
+                    <div class="storybook-generator">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-pen"></i>
+                                角色描述
+                            </label>
+                            <p class="form-help-text">
+                                详细描述角色的外貌、性格、能力、背景等信息，AI将基于此生成结构化数据书。
+                                <span class="auto-fill-hint">如果角色已有简介，会自动填充到此处。</span>
+                            </p>
+                            <textarea id="storybook-description-input" class="form-textarea" 
+                                      rows="8" 
+                                      placeholder="请详细描述角色的外貌、性格、能力、背景故事等...&#10;&#10;例如：&#10;• 外貌：金色长发，蓝色眼睛，身高165cm&#10;• 性格：温柔善良，但战斗时非常勇敢&#10;• 能力：擅长火系魔法，剑术精湛&#10;• 背景：来自魔法学院的优秀学生"></textarea>
+                        </div>
+
+                        <div class="generation-options">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <input type="checkbox" id="enable-events-storybook" class="form-checkbox">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    包含角色事件记录
+                                </label>
+                                <p class="form-help-text">在数据书中添加"事件"数组，用于记录角色的重要经历</p>
+                            </div>
+                        </div>
+                        
+                        <div class="storybook-actions">
+                            <button type="button" class="btn btn-success btn-large" id="generate-storybook-from-description">
+                                <i class="fas fa-magic"></i>
+                                保存并AI生成数据书
+                            </button>
+                        </div>
+
+                        <!-- 生成状态提示 -->
+                        <div id="generation-status" class="generation-status" style="display: none;">
+                            <div class="status-content">
+                                <i class="fas fa-cog fa-spin"></i>
+                                <span>正在保存角色并AI生成数据书，请稍候...</span>
+                            </div>
+                            <div class="status-tip">
+                                <i class="fas fa-info-circle"></i>
+                                请保持页面打开，等待生成完成，不要关闭此窗口
+                            </div>
+                        </div>
+
+                        <!-- 生成结果显示 -->
+                        <div id="generation-result" class="generation-result" style="display: none;">
+                            <div class="result-header">
+                                <h5><i class="fas fa-check-double"></i> 数据书生成并绑定完成</h5>
+                            </div>
+                            <div class="result-content">
+                                <p>🎉 已成功保存角色，AI智能生成数据书，清空重复的简介内容，并设置双向绑定。您可以在角色列表中查看完整内容，或在聊天中体验角色的智能对话能力。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 角色捆绑标签页 -->
+                <div class="tab-content" data-tab="role-binding">
+                    <div class="role-binding-header">
+                        <h4><i class="fas fa-users"></i> 角色捆绑配置</h4>
+                        <p class="role-binding-description">
+                            为该角色设置捆绑的对话伙伴。支持以下功能：
+                        </p>
+                        <div class="binding-features">
+                            <div class="feature-item">
+                                <i class="fas fa-theater-masks"></i>
+                                <strong>旁白角色</strong>：自动@捆绑角色实现多人对话
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-comments"></i>
+                                <strong>多人聊天</strong>：切换角色时自动启用多人聊天模式
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-map"></i>
+                                <strong>场景角色</strong>：创建特定场景的角色组合
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="enable-role-binding" class="form-checkbox">
+                            <i class="fas fa-link"></i>
+                            启用角色捆绑功能
+                        </label>
+                        <p class="form-help-text">启用后可以为该角色设置固定的对话伙伴</p>
+                    </div>
+                    
+                    <div id="role-binding-config" class="role-binding-config" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-user-friends"></i>
+                                捆绑角色列表
+                            </label>
+                            <div class="bound-roles-selector">
+                                <div class="selected-roles-display" id="selected-bound-roles">
+                                    <!-- 已选择的捆绑角色将显示在这里 -->
+                                </div>
+                                <button type="button" class="btn btn-primary btn-small" id="add-bound-role-btn">
+                                    <i class="fas fa-plus"></i>
+                                    添加角色
+                                </button>
+                            </div>
+                        </div>
+                        
+                        
+                        <div class="role-binding-preview">
+                            <h5><i class="fas fa-eye"></i> 效果预览</h5>
+                            <div class="preview-content">
+                                <p>启用捆绑功能后，与 <strong id="preview-main-role">该角色</strong> 聊天时将包含以下角色：</p>
+                                <div id="preview-roles-list" class="preview-roles">
+                                    <!-- 预览角色列表将在这里显示 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="role-binding-help">
+                        <h5><i class="fas fa-question-circle"></i> 使用说明</h5>
+                        <div class="help-sections">
+                            <div class="help-section">
+                                <h6><i class="fas fa-theater-masks"></i> 旁白角色模式</h6>
+                                <ul>
+                                    <li>将角色类别设置为"旁白角色"</li>
+                                    <li>启用角色捆绑功能并添加捆绑角色</li>
+                                    <li>玩家消息会自动@随机选择的捆绑角色</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="help-section">
+                                <h6><i class="fas fa-comments"></i> 多人聊天模式</h6>
+                                <ul>
+                                    <li>普通角色启用角色捆绑功能</li>
+                                    <li>切换到该角色时自动启用多人聊天</li>
+                                    <li>AI根据消息内容智能选择回复角色</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="help-section">
+                                <h6><i class="fas fa-cog"></i> 高级功能</h6>
+                                <ul>
+                                    <li><strong>场景角色</strong>：创建特定场景的角色组合</li>
+                                    <li><strong>灵活控制</strong>：可在聊天界面手动调整参与角色</li>
+                                    <li><strong>智能选择</strong>：系统根据上下文选择最合适的角色</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-btn">取消</button>
+                    <button type="button" class="btn btn-success" id="save-only-btn">
+                        <i class="fas fa-save"></i>
+                        保存角色
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 角色详情模态框 -->
+    <div id="character-detail-modal" class="modal">
+        <div class="modal-content character-detail-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="detail-modal-title">角色详情</h3>
+                <button class="close-btn" id="close-detail-modal-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="character-detail-body">
+                <div class="detail-sidebar">
+                    <div class="detail-avatar">
+                        <img id="detail-avatar" src="" alt="角色头像">
+                    </div>
+                    <div class="detail-actions">
+                        <button class="btn btn-primary" id="edit-character-btn">
+                            <i class="fas fa-edit"></i>
+                            编辑角色
+                        </button>
+                        <button class="btn btn-success" id="use-character-btn">
+                            <i class="fas fa-play" id="use-character-icon"></i>
+                            <span id="use-character-text">使用角色</span>
+                        </button>
+                        <div class="export-dropdown">
+                            <button class="btn btn-warning dropdown-toggle" id="export-character-btn">
+                                <i class="fas fa-download"></i>
+                                导出角色
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="dropdown-menu" id="export-dropdown-menu">
+                                <a href="#" class="dropdown-item" id="export-image-btn">
+                                    <i class="fas fa-image"></i>
+                                    导出图片(角色资料存储在图片中)
+                                </a>
+                            </div>
+                        </div>
+                        <button class="btn btn-danger" id="delete-character-btn">
+                            <i class="fas fa-trash"></i>
+                            删除角色
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="detail-content">
+                    <div class="detail-tabs">
+                        <button class="detail-tab-btn active" data-tab="overview">概览</button>
+                        <button class="detail-tab-btn" data-tab="history">使用记录</button>
+                    </div>
+                    
+                    <div class="detail-tab-content active" data-tab="overview">
+                        <div id="character-overview"></div>
+                    </div>
+                    
+                    <div class="detail-tab-content" data-tab="history">
+                        <div id="character-usage-history"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认删除模态框 -->
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content confirm-modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">确认操作</h3>
+                <button class="close-btn" id="close-confirm-modal-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="confirm-body">
+                <div class="confirm-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="confirm-message" id="confirm-message">
+                    确定要执行此操作吗？
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="confirm-cancel-btn">取消</button>
+                <button class="btn btn-danger" id="confirm-ok-btn">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI后处理模态框 -->
+    <div id="ai-post-process-modal" class="modal">
+        <div class="modal-content ai-process-modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-magic"></i>
+                    AI角色优化
+                </h3>
+                <button class="close-btn" id="close-ai-process-modal-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="ai-process-body">
+                <div class="import-success-info">
+                    <div class="success-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h4>角色导入成功！</h4>
+                    <p id="imported-character-name">角色 "示例角色" 已成功导入</p>
+                </div>
+                
+                <div class="ai-process-options">
+                    <h5><i class="fas fa-robot"></i> 是否需要AI进一步处理？</h5>
+                    <p class="ai-process-description">
+                        AI可以帮您优化角色设定，包括翻译、润色、补充背景等。请输入您的处理需求：
+                    </p>
+                    
+                    <div class="ai-instruction-input">
+                        <label for="ai-instruction" class="form-label">AI处理指令：</label>
+                        <textarea id="ai-instruction" class="form-textarea" rows="3" 
+                                  placeholder="例如：翻译成中文、润色角色描述、补充性格细节、优化对话示例等..."></textarea>
+                    </div>
+                    
+                    <div class="quick-instructions">
+                        <label class="form-label">快速指令：</label>
+                        <div class="quick-instruction-buttons">
+                            <button type="button" class="btn btn-small quick-instruction-btn" data-instruction="翻译成中文">
+                                <i class="fas fa-language"></i> 翻译成中文
+                            </button>
+                            <button type="button" class="btn btn-small quick-instruction-btn" data-instruction="润色和优化角色描述">
+                                <i class="fas fa-edit"></i> 润色描述
+                            </button>
+                            <button type="button" class="btn btn-small quick-instruction-btn" data-instruction="补充角色背景和性格细节">
+                                <i class="fas fa-user-plus"></i> 补充细节
+                            </button>
+                            <button type="button" class="btn btn-small quick-instruction-btn" data-instruction="优化对话示例和开场白">
+                                <i class="fas fa-comments"></i> 优化对话
+                            </button>
+                            <button type="button" class="btn btn-small quick-instruction-btn" data-instruction="将角色本地化，适应中文语境">
+                                <i class="fas fa-globe-asia"></i> 本地化
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="skip-ai-process-btn">
+                    <i class="fas fa-times"></i>
+                    跳过，直接使用
+                </button>
+                <button class="btn btn-primary" id="start-ai-process-btn">
+                    <i class="fas fa-magic"></i>
+                    开始AI处理
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI创建角色数据书模态框 -->
+    <div id="ai-create-storybook-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-magic"></i>
+                    AI创建角色数据书
+                </h3>
+                <button class="close-btn" id="close-ai-storybook-modal-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="storybook-name" class="form-label">数据书名称</label>
+                    <input type="text" id="storybook-name" class="form-input" placeholder="输入数据书名称（留空则自动根据角色名称生成）">
+                </div>
+                
+                <div class="form-group">
+                    <label for="ai-model-select" class="form-label">AI模型（可选）</label>
+                    <select id="ai-model-select" class="form-select">
+                        <option value="">使用默认模型</option>
+                        <!-- 模型选项将通过JavaScript动态生成 -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="storybook-prompt" class="form-label">创建需求</label>
+                    <textarea id="storybook-prompt" class="form-textarea" rows="5" 
+                              placeholder="请描述您想要为这个角色创建什么样的数据书...&#10;例如：&#10;- 创建详细的背景故事和设定&#10;- 包含外貌、性格、技能等属性&#10;- 添加关系网和重要经历&#10;- 设定居住环境和日常行为"></textarea>
+                </div>
+                
+                <div class="ai-storybook-features">
+                    <h4><i class="fas fa-robot"></i> AI将为您创建：</h4>
+                    <ul>
+                        <li><i class="fas fa-check"></i> 角色的详细背景故事</li>
+                        <li><i class="fas fa-check"></i> 外貌、性格、技能等属性设定</li>
+                        <li><i class="fas fa-check"></i> 人际关系和社会背景</li>
+                        <li><i class="fas fa-check"></i> 重要经历和成长轨迹</li>
+                        <li><i class="fas fa-check"></i> 自动绑定到当前角色</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="cancel-ai-storybook-btn">取消</button>
+                <button class="btn btn-primary" id="create-ai-storybook-btn">
+                    <i class="fas fa-magic"></i>
+                    创建数据书
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 角色选择模态框 -->
+    <div id="role-selector-modal" class="modal">
+        <div class="modal-content role-selector-modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">选择捆绑角色</h3>
+                <button class="close-btn" id="close-role-selector-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="role-selector-body">
+                <div class="role-search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="role-search-input" placeholder="搜索角色..." class="search-input">
+                </div>
+                
+                <div class="available-roles-list" id="available-roles-list">
+                    <!-- 可选角色列表将动态生成 -->
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="role-selector-cancel-btn">取消</button>
+                <button class="btn btn-primary" id="role-selector-confirm-btn">确认选择</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导入角色模态框 -->
+    <div id="import-modal" class="modal">
+        <div class="modal-content confirm-modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">导入角色</h3>
+                <button class="close-btn" id="close-import-modal-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="import-body">
+                <div class="import-tabs">
+                    <button class="import-tab-btn active" data-tab="image">
+                        <i class="fas fa-image"></i>
+                        图片导入
+                    </button>
+                </div>
+                
+                <!-- 图片导入标签页 -->
+                <div class="import-tab-content active" data-tab="image">
+                    <div class="import-area">
+                        <div class="import-icon">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <h4>导入角色卡图片</h4>
+                        <p>支持带有嵌入角色数据的 PNG/JPG 图片文件</p>
+                        
+                        <input type="file" id="import-image-input" accept="image/*" multiple style="display: none;">
+                        <div class="import-buttons">
+                            <button class="btn btn-primary" id="select-import-images-btn">
+                                <i class="fas fa-images"></i>
+                                选择图片
+                            </button>
+                            <button class="btn btn-secondary" id="select-all-images-btn" style="display: none;">
+                                <i class="fas fa-check-square"></i>
+                                全选
+                            </button>
+                            <button class="btn btn-secondary" id="deselect-all-images-btn" style="display: none;">
+                                <i class="fas fa-square"></i>
+                                取消全选
+                            </button>
+                        </div>
+                        
+                        <div class="import-files-list" id="import-images-list">
+                            <!-- 选中的图片列表将显示在这里 -->
+                        </div>
+                        
+                        <!-- 批量操作提示 -->
+                        <div class="batch-import-info" id="batch-import-info" style="display: none;">
+                            <div class="batch-info-content">
+                                <i class="fas fa-info-circle"></i>
+                                <span id="selected-count">0</span> 个文件已选中，点击图片可切换选择状态
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="import-cancel-btn">取消</button>
+                <button class="btn btn-success" id="import-confirm-btn" disabled>
+                    <i class="fas fa-upload"></i>
+                    开始导入
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导入成功确认创建数据书模态框 -->
+    <div id="import-success-storybook-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-check-circle"></i>
+                    导入成功
+                </h3>
+                <button class="close-btn" id="close-import-success-modal-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="import-success-message">
+                    <div class="success-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h4>角色导入成功！</h4>
+                    <p id="import-success-details">已成功导入角色</p>
+                </div>
+                
+                <div class="storybook-question">
+                    <h5><i class="fas fa-book"></i> 创建数据书</h5>
+                    <p>是否需要为导入的角色创建数据书？</p>
+                    <p class="help-text">数据书可以存储角色的详细信息，支持跨角色理解和记忆功能。</p>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="skip-storybook-creation-btn">
+                    <i class="fas fa-times"></i>
+                    跳过
+                </button>
+                <button class="btn btn-primary" id="create-storybook-btn">
+                    <i class="fas fa-magic"></i>
+                    创建数据书
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI创建后处理确认模态框 -->
+    <div id="ai-creation-options-modal" class="modal">
+        <div class="modal-content ai-creation-options-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-magic"></i>
+                    AI创建选项
+                </h3>
+                <button class="close-btn" id="close-ai-options-modal-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="ai-options-body">
+                <div class="creation-success-info">
+                    <div class="success-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h4>角色保存成功！</h4>
+                    <p id="created-character-name">角色已成功保存</p>
+                </div>
+                
+                <div class="ai-options-section">
+                    <h5><i class="fas fa-robot"></i> AI创建选项</h5>
+                    <p class="ai-options-description">
+                        是否需要AI为该角色创建详细的数据书？您可以选择以下选项：
+                    </p>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="enable-events-checkbox" class="form-checkbox">
+                            <i class="fas fa-calendar-alt"></i>
+                            开启角色事件功能
+                        </label>
+                        <p class="form-help-text">
+                            <strong>开启后会让角色记住一些关键的大事件</strong><br>
+                            在数据书中添加"事件"数组，用于记录角色的重要经历和关键事件
+                        </p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="additional-instructions" class="form-label">附加说明（可选）</label>
+                        <textarea id="additional-instructions" class="form-textarea" rows="3" 
+                                  placeholder="您可以在此添加对角色数据书的特殊要求..."></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="skip-ai-creation-btn">
+                    <i class="fas fa-times"></i>
+                    跳过AI创建
+                </button>
+                <button class="btn btn-primary" id="proceed-ai-creation-btn">
+                    <i class="fas fa-magic"></i>
+                    开始AI创建数据书
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JSZip库用于批量导出 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- 用户属性功能模块 -->
+    <script src="{{ url_for('static', filename='js/user_attributes.js') }}"></script>
+    <!-- 酒馆角色卡导入模块 -->
+    <script src="{{ url_for('static', filename='js/tavern_card_importer.js') }}"></script>
+    <!-- 角色功能模块 -->
+    <script src="{{ url_for('static', filename='character_features/character_importer.js') }}"></script>
+    <script src="{{ url_for('static', filename='character_features/character_exporter.js') }}"></script>
+    <script src="{{ url_for('static', filename='character_features/storybook_creator.js') }}"></script>
+    <script src="{{ url_for('static', filename='character_features/ai_storybook_generator.js') }}"></script>
+    <script src="{{ url_for('static', filename='character_features/index.js') }}"></script>
+    <!-- 旁白角色处理模块 -->
+    <script src="{{ url_for('static', filename='js/narrator_role_handler.js') }}"></script>
+    <!-- 主角色管理模块 -->
+    <script src="{{ url_for('static', filename='js/character_management.js') }}"></script>
+    <!-- 旁白角色表单扩展 (需要在CharacterManagement类加载后) -->
+    <script src="{{ url_for('static', filename='js/narrator_form_extension.js') }}"></script>
+</body>
+</html>

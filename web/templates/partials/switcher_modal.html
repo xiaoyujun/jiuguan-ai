@@ -1,0 +1,69 @@
+{# ============================================================
+   partials/switcher_modal.html
+   ------------------------------------------------------------
+   通用切换弹窗模板（角色/玩家/未来其他场景共用）。
+   使用前需 set 变量：
+     - variant: 'role' | 'player' | 自定义
+     - modal_id (默认 variant ~ 'SwitcherModal')
+     - title_icon, title_text
+     - search_placeholder
+     - count_label_default：例 "共 0 个角色"
+     - footer_main_text, footer_main_onclick
+   仅渲染 DOM；JS 行为由 switcher_modal_base.js + 子类定义。
+   ============================================================ #}
+{% set v = variant|default('role') %}
+{% set _modal_id = modal_id|default(v ~ 'SwitcherModal') %}
+{% set _grid_id = grid_id|default(v ~ 'sGrid') %}
+{% set _input_id = input_id|default(v ~ 'SearchInput') %}
+{% set _clear_id = clear_id|default(v ~ 'SearchClearBtn' if v == 'player' else 'searchClearBtn') %}
+{% set _loading_id = loading_id|default(v ~ 'LoadingState' if v == 'player' else 'loadingState') %}
+{% set _empty_id = empty_id|default(v ~ 'EmptyState' if v == 'player' else 'emptyState') %}
+{% set _count_id = count_id|default(v ~ 'Count') %}
+{% set _close_fn = close_fn|default('close' ~ v[0]|upper ~ v[1:] ~ 'SwitcherModal') %}
+{% set _clear_fn = clear_fn|default('clearPlayerSearch' if v == 'player' else 'clearSearch') %}
+
+<div class="modal-overlay" id="{{ _modal_id }}">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h2 class="modal-title">{{ title_icon|default('🎭') }} {{ title_text|default('快速切换') }}</h2>
+            <button class="close-btn" onclick="{{ _close_fn }}()"><span>×</span></button>
+        </div>
+
+        <div class="search-container">
+            <div class="search-input-wrapper">
+                <input type="text" id="{{ _input_id }}" class="search-input"
+                       placeholder="{{ search_placeholder|default('🔍 搜索...') }}" autocomplete="off">
+                <button class="search-clear-btn" id="{{ _clear_id }}" onclick="{{ _clear_fn }}()">
+                    <span>×</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="{{ v }}s-container">
+            <div class="{{ v }}s-grid" id="{{ _grid_id }}"></div>
+
+            <div class="loading-state" id="{{ _loading_id }}">
+                <div class="spinner"></div>
+                <p>{{ loading_text|default('正在加载...') }}</p>
+            </div>
+
+            <div class="empty-state" id="{{ _empty_id }}" style="display: none;">
+                <div class="empty-icon">🔍</div>
+                <p>{{ empty_text|default('没有找到匹配项') }}</p>
+                <small>{{ empty_hint|default('请尝试其他搜索关键词') }}</small>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <div class="footer-info">
+                <span class="{{ v }}-count" id="{{ _count_id }}">{{ count_label_default|default('共 0 项') }}</span>
+            </div>
+            <div class="footer-actions">
+                <button class="btn-secondary" onclick="{{ _close_fn }}()">取消</button>
+                <button class="btn-primary" onclick="{{ footer_main_onclick|default('void 0') }}">
+                    {{ footer_main_text|default('管理') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

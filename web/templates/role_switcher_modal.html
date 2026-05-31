@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>快速切换角色</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/role_switcher_modal.css') }}">
+</head>
+<body>
+    <div class="modal-overlay" id="roleSwitcherModal">
+        <div class="modal-container">
+            <!-- 头部 -->
+            <div class="modal-header">
+                <h2 class="modal-title">🎭 快速切换角色</h2>
+                <button class="close-btn" onclick="closeRoleSwitcherModal()">
+                    <span>×</span>
+                </button>
+            </div>
+            
+            <!-- 搜索区域 -->
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <input type="text" 
+                           id="roleSearchInput" 
+                           class="search-input" 
+                           placeholder="🔍 搜索角色名称..."
+                           autocomplete="off">
+                    <button class="search-clear-btn" id="searchClearBtn" onclick="clearSearch()">
+                        <span>×</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 角色列表 -->
+            <div class="roles-container">
+                <div class="roles-grid" id="rolesGrid">
+                    <!-- 角色项将通过JavaScript动态加载 -->
+                </div>
+                
+                <!-- 加载状态 -->
+                <div class="loading-state" id="loadingState">
+                    <div class="spinner"></div>
+                    <p>正在加载角色列表...</p>
+                </div>
+                
+                <!-- 空状态 -->
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <div class="empty-icon">🔍</div>
+                    <p>没有找到匹配的角色</p>
+                    <small>请尝试其他搜索关键词</small>
+                </div>
+            </div>
+            
+            <!-- 底部操作 -->
+            <div class="modal-footer">
+                <div class="footer-info">
+                    <span class="role-count" id="roleCount">共 0 个角色</span>
+                </div>
+                <div class="footer-actions">
+                    <button class="btn-secondary" onclick="closeRoleSwitcherModal()">
+                        取消
+                    </button>
+                    <button class="btn-primary" onclick="openCharacterManagement()">
+                        角色管理
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/role_switcher_modal.js') }}"></script>
+</body>
+</html>

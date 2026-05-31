@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FPS定位微调 · 精准射击训练</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="tactical-background">
+        <div class="grid-overlay"></div>
+        <div class="scanner-lines"></div>
+        <div class="targeting-reticle"></div>
+    </div>
+    
+    <main class="fps-container" role="main">
+        <header class="fps-header">
+            <h1 class="fps-title">
+                <span class="title-main">FPS定位微调</span>
+                <span class="title-sub">5秒精准射击挑战</span>
+            </h1>
+            <button class="close-btn" onclick="closeGame()" aria-label="关闭游戏">
+                <span class="close-icon">✕</span>
+            </button>
+        </header>
+        
+        <!-- 游戏区域 -->
+        <section class="game-arena" aria-labelledby="arena-title">
+            <h2 id="arena-title" class="sr-only">射击训练区域</h2>
+            
+            <!-- 游戏状态栏 -->
+            <div class="hud">
+                <div class="hud-left">
+                    <div class="stat-display">
+                        <span class="stat-label">时间</span>
+                        <span class="stat-value" id="timer">5.00</span>
+                    </div>
+                    <div class="stat-display">
+                        <span class="stat-label">分数</span>
+                        <span class="stat-value" id="score">0</span>
+                    </div>
+                </div>
+                <div class="hud-right">
+                    <div class="stat-display">
+                        <span class="stat-label">命中</span>
+                        <span class="stat-value" id="hits">0</span>
+                    </div>
+                    <div class="stat-display">
+                        <span class="stat-label">精度</span>
+                        <span class="stat-value" id="accuracy">0%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 射击区域 -->
+            <div class="shooting-area" id="shooting-area">
+                <div class="crosshair" id="crosshair">
+                    <div class="crosshair-horizontal"></div>
+                    <div class="crosshair-vertical"></div>
+                    <div class="crosshair-center"></div>
+                </div>
+                
+                <!-- 目标会动态生成 -->
+            </div>
+            
+            <!-- 游戏状态覆盖层 -->
+            <div class="game-overlay" id="game-overlay">
+                <div class="overlay-content">
+                    <h2 class="overlay-title" id="overlay-title">FPS定位微调训练</h2>
+                    <p class="overlay-desc" id="overlay-desc">
+                        在5秒内尽可能快速准确地点击出现的目标<br>
+                        提升你的鼠标定位精度和反应速度
+                    </p>
+                    <button class="start-btn tactical-btn" id="start-btn" onclick="startGame()">
+                        <span class="btn-bg"></span>
+                        <span class="btn-content">
+                            <span class="btn-icon">🎯</span>
+                            <span class="btn-text">开始训练</span>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 结果面板 -->
+        <section class="results-panel" id="results-panel" style="display: none;">
+            <h2 class="results-title">训练结果</h2>
+            <div class="results-grid">
+                <div class="result-card">
+                    <div class="result-icon">🎯</div>
+                    <div class="result-label">最终分数</div>
+                    <div class="result-value" id="final-score">0</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-icon">🏹</div>
+                    <div class="result-label">命中率</div>
+                    <div class="result-value" id="final-accuracy">0%</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-icon">⚡</div>
+                    <div class="result-label">平均反应</div>
+                    <div class="result-value" id="avg-reaction">0ms</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-icon">🏆</div>
+                    <div class="result-label">检定结果</div>
+                    <div class="result-value" id="d100-result">d??</div>
+                </div>
+            </div>
+            
+            <div class="results-actions">
+                <button class="retry-btn tactical-btn" onclick="resetGame()">
+                    <span class="btn-bg"></span>
+                    <span class="btn-content">再次训练</span>
+                </button>
+                <button class="send-to-chat-btn tactical-btn primary" id="send-to-chat-btn" onclick="sendToChat()">
+                    <span class="btn-bg"></span>
+                    <span class="btn-content">发送结果</span>
+                </button>
+            </div>
+        </section>
+        
+        <!-- 历史记录 -->
+        <section class="history-section" aria-labelledby="history-title">
+            <h3 id="history-title" class="history-title">
+                <span class="title-icon">📊</span>
+                训练记录
+            </h3>
+            <div class="history-list" id="history-list" role="log" aria-label="历史记录列表">
+                <div class="history-empty">~ 开始你的第一次训练 ~</div>
+            </div>
+            <button class="clear-history-btn danger-btn" onclick="clearHistory()">
+                <span class="btn-bg"></span>
+                <span class="btn-content">清除记录</span>
+            </button>
+        </section>
+        
+        <footer class="game-info">
+            <div class="info-content">
+                <p class="info-text">专业级FPS定位训练系统</p>
+                <p class="info-subtext">提升反应速度 · 增强鼠标精度 · 锻炼手眼协调</p>
+            </div>
+        </footer>
+    </main>
+    
+    <script src="script.js"></script>
+</body>
+</html>

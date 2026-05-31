@@ -1,0 +1,13 @@
+flask>=2.3.0
+requests>=2.31.0
+pyyaml>=6.0
+werkzeug>=2.3.0
+openai>=1.0.0
+
+# 向量化功能依赖
+numpy>=1.21.0
+jieba>=0.42.1
+
+# 模糊搜索 (需要Levenshtein以获得更好性能)
+fuzzywuzzy>=0.18.0
+python-levenshtein>=0.12.0

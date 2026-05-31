@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创建纪念 - AI聊天系统</title>
+    <link rel="stylesheet" href="/static/css/memories.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📸 创建纪念</h1>
+            <p class="subtitle">保存珍贵的聊天时刻</p>
+        </div>
+
+        <div class="memory-form">
+            <div class="form-group">
+                <label for="title">纪念标题 *</label>
+                <input type="text" id="title" class="form-input" placeholder="给这段回忆起个名字..." required>
+            </div>
+
+            <div class="form-group">
+                <label for="role-select">选择角色 *</label>
+                <select id="role-select" class="form-select" required>
+                    <option value="">-- 请选择角色 --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="message-count">保存消息数量</label>
+                <div class="slider-container">
+                    <input type="range" id="message-count" class="form-slider" min="1" max="50" value="5">
+                    <span class="slider-value">5</span> 条
+                </div>
+                <p class="form-hint">将保存最近的对话记录</p>
+            </div>
+
+            <div class="form-group">
+                <label for="image-upload">上传图片（可选）</label>
+                <div class="image-upload-area" id="image-upload-area">
+                    <input type="file" id="image-upload" accept="image/*" hidden>
+                    <div class="upload-placeholder">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p>点击上传图片</p>
+                        <p class="upload-hint">支持 PNG, JPG, GIF, WEBP 格式</p>
+                    </div>
+                    <div class="image-preview" id="image-preview" style="display: none;">
+                        <img id="preview-img" src="" alt="预览">
+                        <button type="button" class="remove-image" id="remove-image">×</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="description">纪念描述</label>
+                <textarea id="description" class="form-textarea" rows="4" placeholder="写下这个时刻的感受或背景故事..."></textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='/memories/review'">
+                    查看回顾
+                </button>
+                <button type="button" class="btn btn-primary" id="create-btn">
+                    创建纪念
+                </button>
+            </div>
+        </div>
+
+        <div class="loading" id="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>正在创建纪念...</p>
+        </div>
+    </div>
+
+    <script src="/static/js/memories.js"></script>
+</body>
+</html>

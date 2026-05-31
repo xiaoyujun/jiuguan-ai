@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>回顾纪念 - AI聊天系统</title>
+    <link rel="stylesheet" href="/static/css/review.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎞️ 回顾纪念</h1>
+            <p class="subtitle">重温珍贵的聊天时刻</p>
+        </div>
+
+        <div class="search-bar">
+            <div class="search-input-group">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                <input type="text" id="search-input" class="search-input" placeholder="搜索纪念标题或描述...">
+            </div>
+            
+            <select id="role-filter" class="filter-select">
+                <option value="">全部角色</option>
+            </select>
+            
+            <button type="button" class="btn btn-primary" onclick="window.location.href='/memories/page'">
+                创建新纪念
+            </button>
+        </div>
+
+        <div class="memories-grid" id="memories-grid">
+            <!-- 纪念卡片将动态加载到这里 -->
+        </div>
+
+        <div class="empty-state" id="empty-state" style="display: none;">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+            <p class="empty-text">暂无纪念</p>
+            <p class="empty-hint">创建第一个纪念，保存珍贵时刻</p>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>加载中...</p>
+        </div>
+    </div>
+
+    <!-- 纪念详情模态框 -->
+    <div class="modal" id="detail-modal" style="display: none;">
+        <div class="modal-overlay" onclick="closeDetailModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">纪念标题</h2>
+                <button class="modal-close" onclick="closeDetailModal()">×</button>
+            </div>
+            
+            <div class="modal-body">
+                <div id="modal-image-container" class="modal-image-container" style="display: none;">
+                    <img id="modal-image" src="" alt="纪念图片">
+                </div>
+                
+                <div class="modal-info">
+                    <div class="info-item">
+                        <span class="info-label">角色：</span>
+                        <span id="modal-role">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">创建时间：</span>
+                        <span id="modal-time">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">消息数量：</span>
+                        <span id="modal-count">-</span>
+                    </div>
+                </div>
+                
+                <div class="modal-description" id="modal-description">
+                    <!-- 描述内容 -->
+                </div>
+                
+                <div class="modal-messages" id="modal-messages">
+                    <!-- 聊天记录 -->
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="delete-btn">删除纪念</button>
+                <button type="button" class="btn btn-primary" id="restore-btn">还原场景</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/review.js"></script>
+</body>
+</html>

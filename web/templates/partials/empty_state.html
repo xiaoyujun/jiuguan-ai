@@ -1,0 +1,19 @@
+{# ============================================================
+   partials/empty_state.html
+   ------------------------------------------------------------
+   通用空状态。
+
+   参数：
+     - id: 容器 id（可选，便于 JS 控制显隐）
+     - icon: 图标
+     - title: 主文案
+     - hint: 辅助说明
+     - hidden: 默认是否隐藏，True/False
+   ============================================================ #}
+<div class="empty-state2{% if extra_class %} {{ extra_class }}{% endif %}"
+     {% if id %}id="{{ id }}"{% endif %}
+     {% if hidden %}style="display: none;"{% endif %}>
+    <div class="empty-state2__icon">{{ icon|default('📭') }}</div>
+    <p class="empty-state2__title">{{ title|default('暂无数据') }}</p>
+    {% if hint %}<p class="empty-state2__hint">{{ hint }}</p>{% endif %}
+</div>

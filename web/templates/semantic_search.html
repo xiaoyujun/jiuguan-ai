@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能语义搜索 - AI角色扮演系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/semantic_search.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🔍 智能语义搜索</h1>
+            <p class="subtitle">基于硬编码特征映射和模糊匹配的智能角色搜索系统</p>
+        </header>
+
+        <div class="search-panel">
+            <div class="search-input-section">
+                <div class="input-group">
+                    <input type="text" id="searchInput" class="search-input" 
+                           placeholder="输入搜索内容，例如：一个喜欢跑步的女生" 
+                           autocomplete="off">
+                    <button id="searchBtn" class="search-btn">搜索</button>
+                </div>
+                
+                <div class="search-options">
+                    <div class="option-group">
+                        <label>搜索类型：</label>
+                        <select id="searchType" class="search-type-select">
+                            <option value="smart">智能搜索 (推荐)</option>
+                            <option value="fuzzy">模糊搜索</option>
+                            <option value="name">名称搜索</option>
+                            <option value="tolerant">容错搜索</option>
+                            <option value="precise">精确搜索</option>
+                            <option value="tiered">分层搜索</option>
+                        </select>
+                    </div>
+                    
+                    <div class="option-group">
+                        <label>结果数量：</label>
+                        <select id="maxResults" class="max-results-select">
+                            <option value="3">3个</option>
+                            <option value="5" selected>5个</option>
+                            <option value="10">10个</option>
+                        </select>
+                    </div>
+                    
+                    <div class="option-group category-group" style="display: none;">
+                        <label>搜索类别：</label>
+                        <select id="searchCategory" class="search-category-select">
+                            <option value="">选择类别</option>
+                            <option value="female">女性角色</option>
+                            <option value="sports">运动角色</option>
+                            <option value="athlete">女性运动员</option>
+                            <option value="student">学生角色</option>
+                            <option value="artist">艺术家角色</option>
+                            <option value="adventurer">冒险者角色</option>
+                            <option value="elf">精灵角色</option>
+                            <option value="dark_elf">黑暗精灵</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="quick-search">
+                    <span class="quick-label">快速搜索：</span>
+                    <button class="quick-btn" data-query="一个喜欢跑步的女生">跑步女生</button>
+                    <button class="quick-btn" data-query="田径健将">田径健将</button>
+                    <button class="quick-btn" data-query="艺术学生">艺术学生</button>
+                    <button class="quick-btn" data-query="黑暗精灵">黑暗精灵</button>
+                    <button class="quick-btn" data-query="冒险者">冒险者</button>
+                </div>
+            </div>
+            
+            <div class="suggestions-section" id="suggestionsSection" style="display: none;">
+                <div class="suggestions-label">搜索建议：</div>
+                <div class="suggestions-list" id="suggestionsList"></div>
+            </div>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="results-header" id="resultsHeader" style="display: none;">
+                <h2>搜索结果</h2>
+                <div class="results-info" id="resultsInfo"></div>
+            </div>
+            
+            <div class="loading" id="loadingIndicator" style="display: none;">
+                <div class="spinner"></div>
+                <span>搜索中...</span>
+            </div>
+            
+            <div class="results-list" id="resultsList"></div>
+            
+            <div class="no-results" id="noResults" style="display: none;">
+                <div class="no-results-icon">🔍</div>
+                <h3>没有找到相关结果</h3>
+                <p>尝试使用不同的关键词或搜索类型</p>
+            </div>
+        </div>
+
+        <div class="engine-status" id="engineStatus">
+            <h3>搜索引擎状态</h3>
+            <div class="status-info" id="statusInfo">
+                <div class="status-item">
+                    <span class="status-label">引擎状态：</span>
+                    <span class="status-value" id="engineStatusValue">未知</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">数据加载：</span>
+                    <span class="status-value" id="dataLoadedValue">0</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">模糊搜索：</span>
+                    <span class="status-value" id="fuzzyAvailableValue">未知</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="help-section">
+            <details>
+                <summary>使用说明</summary>
+                <div class="help-content">
+                    <h4>搜索类型说明：</h4>
+                    <ul>
+                        <li><strong>智能搜索</strong>：自动选择最佳搜索策略，推荐日常使用</li>
+                        <li><strong>模糊搜索</strong>：支持拼写错误和变体，适合不确定拼写时使用</li>
+                        <li><strong>名称搜索</strong>：专门搜索角色名称，支持部分名称匹配</li>
+                        <li><strong>容错搜索</strong>：高容错率，适合有很多错别字时使用</li>
+                        <li><strong>精确搜索</strong>：基于硬编码特征的精确匹配</li>
+                        <li><strong>分层搜索</strong>：根据相关度返回不同详细程度的数据</li>
+                    </ul>
+                    
+                    <h4>搜索示例：</h4>
+                    <ul>
+                        <li>"一个喜欢跑步的女生" - 找到运动型女性角色</li>
+                        <li>"Jad" - 模糊匹配找到 "Jade"</li>
+                        <li>"田经建将" - 容错搜索找到 "田径健将"</li>
+                        <li>"艺术学生" - 找到艺术专业的学生角色</li>
+                    </ul>
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/semantic_search.js') }}"></script>
+</body>
+</html>

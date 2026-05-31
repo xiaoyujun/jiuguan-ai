@@ -1,0 +1,371 @@
+/* 角色数据卡额外样式 - 增强版 */
+
+/* 卡片动画效果 */
+.attribute-card {
+    transition: all 0.3s ease;
+    transform: translateY(0);
+}
+
+.attribute-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* 属性项悬停效果 */
+.attribute-item {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.attribute-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 143, 0, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.attribute-item:hover::before {
+    left: 100%;
+}
+
+/* 能力值动画 */
+.ability-fill {
+    position: relative;
+    overflow: hidden;
+}
+
+.ability-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* 标签悬停效果 */
+.trait-tag {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.trait-tag:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
+}
+
+/* 编辑模式特效 */
+.edit-mode .attribute-value.editable {
+    position: relative;
+}
+
+.edit-mode .attribute-value.editable::after {
+    content: '✏️';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    font-size: 12px;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* 保存指示器动画 */
+.save-indicator {
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* 背包物品特殊效果 */
+.inventory-item {
+    position: relative;
+    overflow: hidden;
+}
+
+.inventory-item::before {
+    content: '🎒';
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    font-size: 20px;
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+/* 社交关系特殊样式 */
+.relationship-group {
+    position: relative;
+}
+
+.relationship-group[data-path*="朋友"]::before {
+    content: '👥';
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 16px;
+    opacity: 0.3;
+}
+
+.relationship-group[data-path*="恋人"]::before {
+    content: '💕';
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 16px;
+    opacity: 0.3;
+}
+
+.relationship-group[data-path*="敌人"]::before {
+    content: '⚔️';
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 16px;
+    opacity: 0.3;
+}
+
+/* 响应式网格优化 */
+@media (max-width: 1200px) {
+    .attributes-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .attributes-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .attributes-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .status-card {
+        grid-column: 1;
+    }
+}
+
+/* 深色主题增强 */
+@media (prefers-color-scheme: dark) {
+    .character-card-page::before {
+        background-image: 
+            radial-gradient(circle at 20% 20%, rgba(255, 143, 0, 0.08) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(156, 39, 176, 0.08) 0%, transparent 50%),
+            radial-gradient(circle at 40% 60%, rgba(183, 115, 51, 0.05) 0%, transparent 50%);
+    }
+    
+    .attribute-item {
+        background: rgba(255, 255, 255, 0.03);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+    
+    .attribute-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+    }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+    .attribute-card {
+        border: 2px solid var(--text-color);
+    }
+    
+    .attribute-header {
+        border-bottom: 2px solid var(--text-color);
+    }
+    
+    .attribute-item {
+        border: 1px solid var(--text-color);
+    }
+}
+
+/* 减少动画模式支持 */
+@media (prefers-reduced-motion: reduce) {
+    .attribute-card,
+    .attribute-item,
+    .trait-tag,
+    .ability-fill {
+        transition: none;
+        animation: none;
+    }
+    
+    .attribute-card:hover {
+        transform: none;
+    }
+    
+    .trait-tag:hover {
+        transform: none;
+    }
+}
+
+/* 打印样式 */
+@media print {
+    .character-card-page {
+        padding: 0;
+        background: white;
+    }
+    
+    .card-container {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+    
+    .action-buttons,
+    .edit-controls,
+    .save-indicator {
+        display: none !important;
+    }
+    
+    .attribute-content {
+        display: block !important;
+    }
+    
+    .section-arrow {
+        display: none;
+    }
+    
+    .attribute-header {
+        background: #f0f0f0 !important;
+        color: #000 !important;
+    }
+}
+
+/* 无障碍增强 */
+.attribute-header {
+    outline: none;
+}
+
+.attribute-header:focus {
+    outline: 2px solid var(--border-gold);
+    outline-offset: 2px;
+}
+
+.action-btn:focus {
+    outline: 2px solid var(--border-gold);
+    outline-offset: 2px;
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+    .action-btn {
+        padding: 12px 20px;
+        font-size: 16px;
+        min-height: 44px;
+    }
+    
+    .attribute-header {
+        padding: 20px;
+        min-height: 60px;
+    }
+    
+    .edit-btn-small {
+        padding: 8px 12px;
+        font-size: 14px;
+        min-height: 36px;
+        min-width: 36px;
+    }
+}
+
+/* 加载动画优化 */
+.loading-spinner {
+    border-width: 3px;
+}
+
+.loading-spinner::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top-color: var(--gold-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite reverse;
+}
+
+/* 状态指示器增强 */
+#saveStatusIndicator {
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* 确认对话框增强 */
+.confirm-dialog {
+    backdrop-filter: blur(5px);
+}
+
+.confirm-content {
+    backdrop-filter: blur(20px);
+    border: 2px solid var(--border-gold);
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* 角色名称特效 */
+.character-name {
+    position: relative;
+    overflow: hidden;
+}
+
+.character-name::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold-color), transparent);
+    transform: translateX(-50%);
+    animation: nameUnderline 3s ease-in-out infinite;
+}
+
+@keyframes nameUnderline {
+    0%, 100% { width: 0; }
+    50% { width: 80%; }
+}
+
+/* 滚动条样式 */
+.card-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.card-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.card-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--gold-color), var(--accent-color));
+    border-radius: 4px;
+}
+
+.card-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #ffb300, #6a1b9a);
+}
+
+/* Firefox 滚动条 */
+.card-content {
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold-color) rgba(255, 255, 255, 0.1);
+}

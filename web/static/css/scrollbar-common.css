@@ -1,0 +1,87 @@
+/* 统一的滚动条样式 - 避免在多个文件中重复定义 */
+
+/* 默认滚动条样式 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--gold-color);
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--copper-color);
+}
+
+/* 细滚动条样式 - 用于小容器 */
+.thin-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 143, 0, 0.3);
+    border-radius: 2px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 143, 0, 0.5);
+}
+
+/* 隐藏滚动条样式 - 用于移动端 */
+.hidden-scrollbar {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE */
+}
+
+.hidden-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+}
+
+/* 移动端滚动优化 */
+@media (max-width: 768px) {
+    /* 移动端默认使用细滚动条 */
+    ::-webkit-scrollbar {
+        width: 3px;
+        height: 3px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: rgba(255, 143, 0, 0.4);
+        border-radius: 2px;
+    }
+    
+    /* 触摸滚动优化 */
+    * {
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+    }
+}
+
+/* Firefox 滚动条样式 */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold-color) var(--border-color);
+}
+
+@media (max-width: 768px) {
+    * {
+        scrollbar-width: none; /* 移动端隐藏Firefox滚动条 */
+    }
+}

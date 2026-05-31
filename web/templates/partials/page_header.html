@@ -1,0 +1,40 @@
+{# ============================================================
+   partials/page_header.html
+   ------------------------------------------------------------
+   通用页面头部片段。可被任何页面 include 使用。
+
+   用法：
+     {% include 'partials/page_header.html' with context %}
+
+   参数（在调用前 set 即可，全部可选）：
+     - page_icon: 标题前图标（emoji/HTML）
+     - page_title: 主标题
+     - page_subtitle: 副标题
+     - back_url: 返回按钮链接，未传则使用浏览器历史回退
+     - extra_actions_html: 通过 caller() 自定义按钮区
+   ============================================================ #}
+<header class="page-header">
+    <div class="page-header__main">
+        <h1 class="page-header__title">
+            {% if page_icon %}<span class="page-header__icon">{{ page_icon }}</span>{% endif %}
+            {{ page_title|default('管理') }}
+        </h1>
+        {% if page_subtitle %}
+        <p class="page-header__subtitle">{{ page_subtitle }}</p>
+        {% endif %}
+    </div>
+    <div class="page-header__actions">
+        {% block header_actions_extra %}{% endblock %}
+        {% if back_url %}
+        <a href="{{ back_url }}" class="btn btn--secondary">
+            <span class="btn__icon">←</span>
+            返回
+        </a>
+        {% else %}
+        <button type="button" class="btn btn--secondary" onclick="window.history.length > 1 ? window.history.back() : window.location.href='/'">
+            <span class="btn__icon">←</span>
+            返回
+        </button>
+        {% endif %}
+    </div>
+</header>

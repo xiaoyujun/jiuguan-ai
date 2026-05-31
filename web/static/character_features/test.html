@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角色功能模块测试</title>
+</head>
+<body>
+    <h1>角色功能模块测试</h1>
+    <div id="test-results"></div>
+    
+    <script src="character_importer.js"></script>
+    <script src="storybook_creator.js"></script>
+    <script src="index.js"></script>
+    
+    <script>
+        // 模拟 characterManagement 对象
+        const mockCharacterManagement = {
+            showNotification: (msg, type) => console.log(`[${type}] ${msg}`),
+            validateCharacterData: () => true,
+            loadCharacters: () => Promise.resolve(),
+            filterAndRenderCharacters: () => {},
+            uploadCharacterAvatar: () => Promise.resolve(),
+            allTags: new Set()
+        };
+        
+        // 测试模块加载
+        function runTests() {
+            const results = document.getElementById('test-results');
+            
+            try {
+                // 测试类是否存在
+                console.log('测试类加载...');
+                if (window.CharacterImporter) {
+                    results.innerHTML += '<p>✓ CharacterImporter 类加载成功</p>';
+                } else {
+                    results.innerHTML += '<p>✗ CharacterImporter 类加载失败</p>';
+                }
+                
+                if (window.StorybookCreator) {
+                    results.innerHTML += '<p>✓ StorybookCreator 类加载成功</p>';
+                } else {
+                    results.innerHTML += '<p>✗ StorybookCreator 类加载失败</p>';
+                }
+                
+                if (window.CharacterFeatures) {
+                    results.innerHTML += '<p>✓ CharacterFeatures 类加载成功</p>';
+                } else {
+                    results.innerHTML += '<p>✗ CharacterFeatures 类加载失败</p>';
+                }
+                
+                if (window.initCharacterFeatures) {
+                    results.innerHTML += '<p>✓ initCharacterFeatures 函数加载成功</p>';
+                } else {
+                    results.innerHTML += '<p>✗ initCharacterFeatures 函数加载失败</p>';
+                }
+                
+                // 测试模块初始化
+                console.log('测试模块初始化...');
+                const characterFeatures = window.initCharacterFeatures(mockCharacterManagement);
+                
+                if (characterFeatures) {
+                    results.innerHTML += '<p>✓ CharacterFeatures 模块初始化成功</p>';
+                    
+                    // 测试状态获取
+                    const status = characterFeatures.getStatus();
+                    results.innerHTML += `<p>模块状态: ${JSON.stringify(status, null, 2)}</p>`;
+                    
+                } else {
+                    results.innerHTML += '<p>✗ CharacterFeatures 模块初始化失败</p>';
+                }
+                
+            } catch (error) {
+                results.innerHTML += `<p>✗ 测试过程中发生错误: ${error.message}</p>`;
+                console.error('测试错误:', error);
+            }
+        }
+        
+        // 页面加载完成后运行测试
+        document.addEventListener('DOMContentLoaded', runTests);
+    </script>
+</body>
+</html>

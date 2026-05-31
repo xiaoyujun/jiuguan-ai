@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能旁白角色@功能测试</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #fff;
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #d4af37;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+        
+        .test-section h2 {
+            color: #d4af37;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ccc;
+            font-weight: bold;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        input::placeholder, textarea::placeholder {
+            color: #aaa;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #d4af37, #b8941f);
+            color: #1a1a2e;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
+        }
+        
+        .result-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border-left: 4px solid #d4af37;
+        }
+        
+        .result-container h3 {
+            color: #d4af37;
+            margin-bottom: 10px;
+        }
+        
+        .score-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .score-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+        
+        .score-item h4 {
+            color: #d4af37;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+        
+        .chat-history {
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        .chat-message {
+            margin-bottom: 5px;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        
+        .success {
+            color: #4caf50;
+        }
+        
+        .error {
+            color: #f44336;
+        }
+        
+        .warning {
+            color: #ff9800;
+        }
+        
+        .info {
+            color: #2196f3;
+        }
+        
+        pre {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 智能旁白角色@功能测试</h1>
+        
+        <div class="test-section">
+            <h2>📝 消息测试</h2>
+            
+            <div class="form-group">
+                <label for="testMessage">玩家消息:</label>
+                <input type="text" id="testMessage" placeholder="输入要测试的消息，例如：你好啊" value="你好啊">
+            </div>
+            
+            <div class="form-group">
+                <label for="boundRoles">捆绑角色 (用逗号分隔):</label>
+                <input type="text" id="boundRoles" placeholder="例如：Elena,Jade,Luna" value="Elena,Jade">
+            </div>
+            
+            <div class="form-group">
+                <label for="chatHistory">聊天历史 (每行一条消息):</label>
+                <textarea id="chatHistory" rows="4" placeholder="例如：&#10;Elena: 大家好&#10;Jade: 今天天气很好">Elena: 大家好，我是Elena
+Jade: 嗨，我是Jade，很高兴见到你</textarea>
+            </div>
+            
+            <button onclick="testSmartSelection()">🧠 测试智能选择</button>
+            <button onclick="runBatchTests()">🧪 批量测试</button>
+            <button onclick="clearResults()">🧹 清空结果</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>⚡ 快速测试用例</h2>
+            <button onclick="loadTestCase('sports')">🏃 运动相关</button>
+            <button onclick="loadTestCase('magic')">✨ 魔法相关</button>
+            <button onclick="loadTestCase('healing')">💚 治疗相关</button>
+            <button onclick="loadTestCase('greeting')">👋 简单问候</button>
+            <button onclick="loadTestCase('mention')">🎯 角色提及</button>
+            <button onclick="loadTestCase('continuity')">🔄 连续性测试</button>
+            <button onclick="loadTestCase('random')">🎲 无关内容</button>
+        </div>
+        
+        <div id="resultsContainer"></div>
+    </div>
+
+    <script>
+        // 预设测试用例
+        const testCases = {
+            sports: {
+                message: "我想去跑步锻炼一下",
+                boundRoles: "Elena,Jade,Luna",
+                chatHistory: `Elena: 我是治疗师，可以帮助大家恢复健康
+Jade: 我最喜欢运动了，特别是跑步和健身
+Luna: 我喜欢看书和学习魔法`
+            },
+            magic: {
+                message: "这个魔法咒语好难学啊",
+                boundRoles: "Elena,Jade,Luna",
+                chatHistory: `Elena: 我会一些治疗魔法
+Jade: 我是个战士，不太懂魔法
+Luna: 我是魔法师，专门研究奥秘魔法和咒语`
+            },
+            healing: {
+                message: "我受伤了，需要治疗",
+                boundRoles: "Elena,Jade,Luna",
+                chatHistory: `Elena: 我是专业的治疗师，可以帮助大家恢复健康
+Jade: 我负责战斗和保护
+Luna: 我研究魔法理论`
+            },
+            greeting: {
+                message: "你好啊",
+                boundRoles: "Elena,Jade",
+                chatHistory: `Elena: 昨天我们聊得很开心
+Jade: 是的，期待今天的对话`
+            },
+            mention: {
+                message: "Elena，你觉得这个怎么样？",
+                boundRoles: "Elena,Jade,Luna",
+                chatHistory: `Jade: 大家好，我是Jade
+Luna: 我在研究魔法
+Elena: 我是治疗师`
+            },
+            continuity: {
+                message: "嗯，好的",
+                boundRoles: "Elena,Jade,Luna",
+                chatHistory: `Elena: 你好，有什么需要帮助的吗？
+玩家: 我想了解一下这里的情况
+Elena: 当然可以，我来为你介绍一下`
+            },
+            random: {
+                message: "今天天气不错",
+                boundRoles: "角色A,角色B,角色C",
+                chatHistory: ""
+            }
+        };
+
+        function loadTestCase(caseKey) {
+            const testCase = testCases[caseKey];
+            if (testCase) {
+                document.getElementById('testMessage').value = testCase.message;
+                document.getElementById('boundRoles').value = testCase.boundRoles;
+                document.getElementById('chatHistory').value = testCase.chatHistory;
+            }
+        }
+
+        async function testSmartSelection() {
+            const message = document.getElementById('testMessage').value.trim();
+            const boundRolesStr = document.getElementById('boundRoles').value.trim();
+            const chatHistoryStr = document.getElementById('chatHistory').value.trim();
+            
+            if (!message || !boundRolesStr) {
+                alert('请输入消息和捆绑角色');
+                return;
+            }
+            
+            const boundRoles = boundRolesStr.split(',').map(s => s.trim()).filter(s => s);
+            const chatHistory = chatHistoryStr ? chatHistoryStr.split('\n').map(s => s.trim()).filter(s => s) : [];
+            
+            try {
+                showLoading();
+                
+                const response = await fetch('/api/semantic/smart-role-selection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        bound_roles: boundRoles,
+                        chat_history: chatHistory,
+                        max_results: 1
+                    })
+                });
+                
+                const result = await response.json();
+                displayResult(result, message, boundRoles, chatHistory);
+                
+            } catch (error) {
+                displayError('网络请求失败: ' + error.message);
+            }
+        }
+
+        async function runBatchTests() {
+            showLoading();
+            const results = [];
+            
+            for (const [key, testCase] of Object.entries(testCases)) {
+                const boundRoles = testCase.boundRoles.split(',').map(s => s.trim()).filter(s => s);
+                const chatHistory = testCase.chatHistory ? testCase.chatHistory.split('\n').map(s => s.trim()).filter(s => s) : [];
+                
+                try {
+                    const response = await fetch('/api/semantic/smart-role-selection', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: testCase.message,
+                            bound_roles: boundRoles,
+                            chat_history: chatHistory,
+                            max_results: 1
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    results.push({
+                        testName: key,
+                        testCase: testCase,
+                        result: result
+                    });
+                    
+                } catch (error) {
+                    results.push({
+                        testName: key,
+                        testCase: testCase,
+                        error: error.message
+                    });
+                }
+                
+                // 添加小延迟避免请求过于频繁
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            
+            displayBatchResults(results);
+        }
+
+        function displayResult(result, message, boundRoles, chatHistory) {
+            const container = document.getElementById('resultsContainer');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            let html = `
+                <div class="result-container">
+                    <h3>🎯 智能选择结果 (${timestamp})</h3>
+                    <p><strong>消息:</strong> "${message}"</p>
+                    <p><strong>捆绑角色:</strong> [${boundRoles.join(', ')}]</p>
+                    <p><strong>聊天历史:</strong> ${chatHistory.length} 条记录</p>
+            `;
+            
+            if (result.success) {
+                const selection = result.selection_result;
+                const methodColor = selection.selection_method === 'smart' ? 'success' : 
+                                  selection.selection_method === 'random' ? 'warning' : 'info';
+                
+                html += `
+                    <div class="score-display">
+                        <div class="score-item">
+                            <h4>🎯 选择结果</h4>
+                            <p><strong>选中角色:</strong> <span class="${methodColor}">${selection.selected_role}</span></p>
+                            <p><strong>选择方法:</strong> <span class="${methodColor}">${selection.selection_method}</span></p>
+                            <p><strong>最终得分:</strong> ${selection.final_score}</p>
+                            ${selection.selection_probability ? `<p><strong>选择概率:</strong> ${(selection.selection_probability * 100).toFixed(1)}%</p>` : ''}
+                        </div>
+                `;
+                
+                // 显示概率分布
+                if (selection.role_probabilities) {
+                    html += `
+                        <div class="score-item">
+                            <h4>🎲 概率分布</h4>
+                            ${Object.entries(selection.role_probabilities).map(([role, prob]) => 
+                                `<p>${role}: <span style="color: ${role === selection.selected_role ? '#4caf50' : '#ccc'}">${(prob * 100).toFixed(1)}%</span></p>`
+                            ).join('')}
+                        </div>
+                    `;
+                }
+                
+                if (selection.role_scores) {
+                    html += `
+                        <div class="score-item">
+                            <h4>📊 角色综合得分</h4>
+                            ${Object.entries(selection.role_scores).map(([role, score]) => 
+                                `<p>${role}: ${score}</p>`
+                            ).join('')}
+                        </div>
+                    `;
+                }
+                
+                if (selection.content_scores) {
+                    html += `
+                        <div class="score-item">
+                            <h4>📝 内容相关度</h4>
+                            ${Object.entries(selection.content_scores).map(([role, score]) => 
+                                `<p>${role}: ${score}</p>`
+                            ).join('')}
+                        </div>
+                    `;
+                }
+                
+                if (selection.history_relevance) {
+                    html += `
+                        <div class="score-item">
+                            <h4>📚 历史相关度</h4>
+                            ${Object.entries(selection.history_relevance).map(([role, score]) => 
+                                `<p>${role}: ${score}</p>`
+                            ).join('')}
+                        </div>
+                    `;
+                }
+                
+                html += `</div>`;
+                
+                if (selection.debug_info) {
+                    html += `
+                        <div class="score-item">
+                            <h4>⏱️ 性能统计</h4>
+                            ${selection.debug_info.total_processing_time ? `<p>总处理时间: ${selection.debug_info.total_processing_time}s</p>` : ''}
+                            ${selection.debug_info.search_time ? `<p>语义搜索: ${selection.debug_info.search_time}s</p>` : ''}
+                            ${selection.debug_info.history_time ? `<p>历史分析: ${selection.debug_info.history_time}s</p>` : ''}
+                        </div>
+                    `;
+                    
+                    html += `
+                        <details style="margin-top: 15px;">
+                            <summary style="cursor: pointer; color: #d4af37;">🔍 详细调试信息</summary>
+                            <pre>${JSON.stringify(selection.debug_info, null, 2)}</pre>
+                        </details>
+                    `;
+                }
+            } else {
+                html += `<p class="error">❌ 错误: ${result.error}</p>`;
+            }
+            
+            html += `</div>`;
+            container.innerHTML = html + container.innerHTML;
+        }
+
+        function displayBatchResults(results) {
+            const container = document.getElementById('resultsContainer');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            let html = `
+                <div class="result-container">
+                    <h3>🧪 批量测试结果 (${timestamp})</h3>
+                    <p>共测试 ${results.length} 个用例</p>
+            `;
+            
+            results.forEach((test, index) => {
+                html += `
+                    <div style="margin: 15px 0; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                        <h4>测试 ${index + 1}: ${test.testName}</h4>
+                        <p><strong>消息:</strong> "${test.testCase.message}"</p>
+                `;
+                
+                if (test.error) {
+                    html += `<p class="error">❌ 错误: ${test.error}</p>`;
+                } else if (test.result.success) {
+                    const selection = test.result.selection_result;
+                    const methodColor = selection.selection_method === 'smart' ? 'success' : 
+                                      selection.selection_method === 'random' ? 'warning' : 'info';
+                    
+                    html += `
+                        <p>✅ <strong>选中角色:</strong> <span class="${methodColor}">${selection.selected_role}</span></p>
+                        <p><strong>方法:</strong> ${selection.selection_method} (得分: ${selection.final_score})</p>
+                    `;
+                } else {
+                    html += `<p class="error">❌ API错误: ${test.result.error}</p>`;
+                }
+                
+                html += `</div>`;
+            });
+            
+            html += `</div>`;
+            container.innerHTML = html + container.innerHTML;
+        }
+
+        function displayError(message) {
+            const container = document.getElementById('resultsContainer');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const html = `
+                <div class="result-container">
+                    <h3 class="error">❌ 错误 (${timestamp})</h3>
+                    <p class="error">${message}</p>
+                </div>
+            `;
+            
+            container.innerHTML = html + container.innerHTML;
+        }
+
+        function showLoading() {
+            const container = document.getElementById('resultsContainer');
+            const html = `
+                <div class="result-container" id="loading">
+                    <h3>⏳ 正在处理...</h3>
+                    <p>请稍候，正在进行智能角色选择分析...</p>
+                </div>
+            `;
+            
+            container.innerHTML = html + container.innerHTML;
+            
+            // 移除loading状态
+            setTimeout(() => {
+                const loading = document.getElementById('loading');
+                if (loading) loading.remove();
+            }, 10000);
+        }
+
+        function clearResults() {
+            document.getElementById('resultsContainer').innerHTML = '';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+# Python cache and virtual env
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.venv/
+venv/
+env/
+
+# Tool caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# IDE and OS noise
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+.claude/
+
+# Project runtime and local secrets (root-level legacy paths)
+config.json
+.hidden_settings/
+聊天记录/
+日志/
+web/static/generated_images/
+web/comfyui/参考/output/
+
+# Project runtime data (current data/ layout)
+# 包含密码哈希、API key、聊天记录、角色资料等用户私有内容
+data/config.json
+data/.hidden_settings/
+data/聊天记录/
+data/角色/
+data/玩家/
+data/数据书/
+data/全局世界书/
+data/关键词世界书/
+data/设定书/
+data/游戏配置/
+
+# 本地临时检查脚本
+check_secrets.py

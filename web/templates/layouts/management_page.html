@@ -1,0 +1,63 @@
+{# ============================================================
+   layouts/management_page.html — 管理类页面二级布局
+   ------------------------------------------------------------
+   适用于：列表 + 搜索 + 编辑弹窗 这一类的管理页：
+     - global_worldbook / keyword_worldbook / storybook
+     - player_management / character_management
+     - event_manager / free_event / model_config
+
+   提供：
+     1. 标准容器 .management-page
+     2. 页面头部 .page-header（标题 / 副标题 / 操作按钮区）
+     3. 内容主区 .page-body
+     4. 通用 modal 容器位（在 content_extra 块外）
+
+   子模板可重写：
+     - page_title / page_subtitle / page_icon
+     - header_actions（按钮区）
+     - page_body（主内容）
+     - modals（编辑弹窗 / 确认弹窗等）
+
+   注意：
+     - 该布局不引入业务样式，只做骨架
+     - 业务页继续在 styles 块中引入自己的页面级 css
+     - 页面 css 中不应再重复定义 .page-header / .empty-state 等通用类，
+       这些已经被 layout.css / components.css 接管
+   ============================================================ #}
+{% extends "layouts/base.html" %}
+
+{% block body_class %}management-page-body{% endblock %}
+
+{% block content %}
+<div class="management-page">
+    {% block page_header %}
+    <header class="page-header">
+        <div class="page-header__main">
+            <h1 class="page-header__title">
+                {% block page_icon %}{% endblock %}
+                {% block page_title %}管理{% endblock %}
+            </h1>
+            {% block page_subtitle_block %}
+            {% if self.page_subtitle()|trim %}
+            <p class="page-header__subtitle">{% block page_subtitle %}{% endblock %}</p>
+            {% endif %}
+            {% endblock %}
+        </div>
+        <div class="page-header__actions">
+            {% block header_actions %}
+            <button class="btn btn--secondary" onclick="window.history.length > 1 ? window.history.back() : window.location.href='/'">
+                <span class="btn__icon">←</span>
+                返回
+            </button>
+            {% endblock %}
+        </div>
+    </header>
+    {% endblock %}
+
+    <div class="page-body">
+        {% block page_body %}{% endblock %}
+    </div>
+</div>
+
+{% block modals %}{% endblock %}
+{% endblock %}

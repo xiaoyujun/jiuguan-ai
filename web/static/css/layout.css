@@ -1,0 +1,108 @@
+/* ============================================================
+   layout.css — 页面级布局（容器、头部、内容栅格）
+   ------------------------------------------------------------
+   职责：管理页骨架 .management-page / .page-header / .page-body
+   依赖：base.css 中的设计令牌
+   ============================================================ */
+
+.management-page {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: var(--space-6) var(--space-5);
+    min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+    .management-page {
+        padding: var(--space-4) var(--space-3);
+    }
+}
+
+/* ---------- page-header ---------- */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-4);
+    padding-bottom: var(--space-5);
+    margin-bottom: var(--space-6);
+    border-bottom: 1px solid var(--color-border);
+    flex-wrap: wrap;
+}
+
+.page-header__main {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.page-header__title {
+    margin: 0 0 var(--space-2) 0;
+    font-size: var(--font-size-2xl);
+    line-height: 1.2;
+    color: var(--color-text-primary);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.page-header__subtitle {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-base);
+}
+
+.page-header__actions {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+@media (max-width: 600px) {
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .page-header__actions {
+        justify-content: flex-end;
+    }
+}
+
+/* ---------- page-body ---------- */
+.page-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+/* ---------- 工具栏区（搜索 + 筛选 + 视图切换） ---------- */
+.page-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    align-items: center;
+}
+
+.page-toolbar > * {
+    flex: 0 0 auto;
+}
+
+.page-toolbar__search {
+    flex: 1 1 280px;
+    min-width: 200px;
+}
+
+/* ---------- 列表壳 ---------- */
+.list-shell {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+}
+
+.list-shell--flush {
+    background: transparent;
+    border: none;
+    padding: 0;
+}

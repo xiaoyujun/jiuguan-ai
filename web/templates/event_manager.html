@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>事件管理器 - 数据书管理</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/event_manager.css') }}">
+</head>
+<body>
+    <a href="/storybook" class="back-to-main">← 返回数据书</a>
+    <a href="/password_settings" class="password-settings-link">🔒 密码设置</a>
+    
+    <div class="event-cleanup-container">
+        <div class="cleanup-header">
+            <h1>⚙️ 事件管理器</h1>
+            <p>管理数据书中的事件数据，支持查看、编辑、搜索、筛选和批量清理</p>
+        </div>
+        
+        <!-- 状态消息 -->
+        <div id="cleanup-status" class="status-message" style="display: none;"></div>
+        
+        <!-- 控制面板 -->
+        <div class="cleanup-controls">
+            <div class="control-section">
+                <h3>🔍 搜索与筛选</h3>
+                <div class="search-section">
+                    <div class="search-input-container">
+                        <input type="text" 
+                               id="event-search-input" 
+                               placeholder="搜索数据书名称、描述、标签或事件内容..."
+                               class="search-input">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h3>⚙️ 操作模式</h3>
+                <div class="clear-mode-section">
+                    <div class="clear-mode-options">
+                        <div class="clear-mode-option">
+                            <input type="radio" id="view-mode" name="operation-mode" value="view" checked>
+                            <label for="view-mode">查看模式</label>
+                        </div>
+                        <div class="clear-mode-option">
+                            <input type="radio" id="edit-mode" name="operation-mode" value="edit">
+                            <label for="edit-mode">编辑模式</label>
+                        </div>
+                        <div class="clear-mode-option">
+                            <input type="radio" id="clear-all" name="operation-mode" value="clear-all">
+                            <label for="clear-all">清空所有事件</label>
+                        </div>
+                        <div class="clear-mode-option">
+                            <input type="radio" id="clear-selected" name="operation-mode" value="clear-selected">
+                            <label for="clear-selected">清空选定事件</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h3>🎯 操作</h3>
+                <div class="action-buttons">
+                    <button id="scan-events-btn" class="cleanup-btn primary">
+                        🔍 扫描事件
+                    </button>
+                    <button id="select-all-stories" class="cleanup-btn secondary">
+                        ☑️ 全选
+                    </button>
+                    <button id="save-changes-btn" class="cleanup-btn success" disabled style="display: none;">
+                        💾 保存更改
+                    </button>
+                    <button id="add-event-btn" class="cleanup-btn secondary" disabled style="display: none;">
+                        ➕ 添加事件
+                    </button>
+                    <button id="preview-cleanup-btn" class="cleanup-btn secondary" disabled style="display: none;">
+                        👁️ 预览清理
+                    </button>
+                    <button id="execute-cleanup-btn" class="cleanup-btn danger" disabled style="display: none;">
+                        🗑️ 执行清理
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 统计信息 -->
+        <div id="cleanup-statistics" class="cleanup-statistics">
+            <div class="stat-item">
+                <span class="stat-label">数据书总数:</span>
+                <span class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">事件总数:</span>
+                <span class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">已选择:</span>
+                <span class="stat-value">0</span>
+            </div>
+        </div>
+        
+        <!-- 数据书列表 -->
+        <div id="stories-with-events-list" class="stories-with-events-list">
+            <div class="no-events-message">
+                <h3>📝 请先扫描事件</h3>
+                <p>点击"扫描事件"按钮来查找包含事件的数据书</p>
+            </div>
+        </div>
+    </div>
+
+        <!-- 预览对话框 -->
+    <div id="preview-dialog" class="preview-dialog">
+        <div class="preview-dialog-content">
+            <div class="preview-dialog-header">
+                <h3>清理预览</h3>
+                <button id="close-preview-dialog" class="close-preview-btn">×</button>
+            </div>
+            <div id="preview-content">
+                <!-- 预览内容将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 事件编辑对话框 -->
+    <div id="event-edit-dialog" class="preview-dialog">
+        <div class="preview-dialog-content">
+            <div class="preview-dialog-header">
+                <h3>编辑事件</h3>
+                <button id="close-event-edit-dialog" class="close-preview-btn">×</button>
+            </div>
+            <div id="event-edit-content">
+                <div class="edit-form">
+                    <input type="hidden" id="edit-story-filename" />
+                    <input type="hidden" id="edit-event-index" />
+                    <label for="edit-event-text">事件内容：</label>
+                    <textarea id="edit-event-text" placeholder="请输入事件内容..." rows="3"></textarea>
+                    <div class="edit-buttons">
+                        <button id="save-event-btn" class="cleanup-btn success">💾 保存</button>
+                        <button id="delete-event-btn" class="cleanup-btn danger">🗑️ 删除</button>
+                        <button id="cancel-edit-btn" class="cleanup-btn secondary">❌ 取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加事件对话框 -->
+    <div id="add-event-dialog" class="preview-dialog">
+        <div class="preview-dialog-content">
+            <div class="preview-dialog-header">
+                <h3>添加新事件</h3>
+                <button id="close-add-event-dialog" class="close-preview-btn">×</button>
+            </div>
+            <div id="add-event-content">
+                <div class="edit-form">
+                    <input type="hidden" id="add-story-filename" />
+                    <label for="add-event-text">事件内容：</label>
+                    <textarea id="add-event-text" placeholder="请输入新事件内容..." rows="3"></textarea>
+                    <div class="edit-buttons">
+                        <button id="confirm-add-event-btn" class="cleanup-btn success">➕ 添加</button>
+                        <button id="cancel-add-btn" class="cleanup-btn secondary">❌ 取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载遮罩 -->
+    <div id="cleanup-loading" class="cleanup-loading">
+        <div style="text-align: center;">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">正在处理中...</div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/event_manager.js') }}"></script>
+</body>
+</html>

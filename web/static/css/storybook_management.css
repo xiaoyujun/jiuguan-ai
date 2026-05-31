@@ -1,0 +1,307 @@
+/**
+ * 数据书管理相关样式
+ * 提供统一的视觉体验和交互反馈
+ */
+
+/* 数据书状态显示 */
+.storybook-status {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border: 1px solid;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.storybook-status-icon {
+    font-size: 1.2rem;
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+}
+
+.storybook-status-text {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.storybook-status-detail {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* 不同状态的样式 */
+.storybook-status.bound {
+    background-color: rgba(34, 197, 94, 0.1);
+    border-color: rgba(34, 197, 94, 0.3);
+    color: var(--success-color);
+}
+
+.storybook-status.unbound {
+    background-color: rgba(251, 146, 60, 0.1);
+    border-color: rgba(251, 146, 60, 0.3);
+    color: var(--warning-color);
+}
+
+.storybook-status.create-mode {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: white;
+}
+
+.storybook-status.narrator-info {
+    background-color: rgba(168, 85, 247, 0.1);
+    border-color: rgba(168, 85, 247, 0.3);
+    color: var(--accent-color);
+}
+
+/* 数据书操作区域 */
+.storybook-actions {
+    margin-bottom: 1rem;
+}
+
+.storybook-action-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.storybook-action-group .btn {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+}
+
+/* NPC创建表单 */
+.npc-creation-form {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.npc-creation-options {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* 旁白角色提示 */
+.narrator-storybook-tip {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background-color: rgba(168, 85, 247, 0.1);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    border-radius: 8px;
+    color: var(--accent-color);
+    font-size: 0.9rem;
+}
+
+/* 数据书编辑器 */
+.storybook-editor {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.storybook-textarea {
+    min-height: 400px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+.storybook-editor-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* AI创建器 */
+.storybook-ai-creator {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.storybook-ai-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* 数据书查看模态框 */
+.storybook-view-modal {
+    max-width: 900px;
+    width: 90vw;
+    max-height: 80vh;
+}
+
+.storybook-view-modal .modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.storybook-content-display {
+    background-color: var(--code-bg);
+    color: var(--code-color);
+    padding: 1rem;
+    border-radius: 6px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin: 0;
+}
+
+/* 加载状态 */
+.storybook-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2rem;
+    color: var(--text-muted);
+}
+
+.storybook-loading i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 错误状态 */
+.storybook-error {
+    padding: 1rem;
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    color: var(--error-color);
+    margin: 1rem 0;
+}
+
+.storybook-error i {
+    margin-right: 0.5rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .storybook-action-group {
+        flex-direction: column;
+    }
+    
+    .storybook-action-group .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .storybook-editor-actions,
+    .storybook-ai-actions {
+        flex-direction: column;
+    }
+    
+    .storybook-view-modal {
+        width: 95vw;
+        margin: 1rem;
+    }
+    
+    .storybook-content-display {
+        font-size: 0.75rem;
+    }
+}
+
+/* 深色主题适配 */
+@media (prefers-color-scheme: dark) {
+    .storybook-content-display {
+        background-color: #1a1a1a;
+        color: #e5e5e5;
+    }
+}
+
+/* 动画效果 */
+.storybook-editor,
+.storybook-ai-creator {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 按钮状态 */
+.btn.loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.btn.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* 表单验证样式 */
+.form-input.error,
+.form-textarea.error {
+    border-color: var(--error-color);
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
+}
+
+.form-error-message {
+    color: var(--error-color);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* 成功状态 */
+.storybook-success {
+    padding: 1rem;
+    background-color: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 8px;
+    color: var(--success-color);
+    margin: 1rem 0;
+}
+
+.storybook-success i {
+    margin-right: 0.5rem;
+}

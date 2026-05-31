@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>命运之骰 · D100检定</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="mystical-background">
+        <div class="floating-particles"></div>
+        <div class="arcane-circles"></div>
+    </div>
+    
+    <main class="game-container" role="main">
+        <header class="game-header">
+            <h1 class="game-title">
+                <span class="title-main">命运之骰</span>
+                <span class="title-sub">D100 · 百面检定</span>
+            </h1>
+            <button class="close-btn" onclick="closeGame()" aria-label="关闭游戏">
+                <span class="close-icon">✕</span>
+            </button>
+        </header>
+        
+        <section class="dice-arena" aria-labelledby="dice-title">
+            <h2 id="dice-title" class="sr-only">骰子投掷区域</h2>
+            <div class="dice-pedestal">
+                <div class="dice-container">
+                    <div class="dice" id="dice" role="button" tabindex="0" aria-label="点击投掷骰子">
+                        <div class="dice-face" id="dice-face">
+                            <span id="dice-number" class="dice-number">?</span>
+                            <div class="dice-glow"></div>
+                        </div>
+                        <div class="dice-shadow"></div>
+                    </div>
+                </div>
+                <div class="mystical-runes">
+                    <span class="rune rune-1">ᚱ</span>
+                    <span class="rune rune-2">ᚠ</span>
+                    <span class="rune rune-3">ᚦ</span>
+                    <span class="rune rune-4">ᚨ</span>
+                </div>
+            </div>
+        </section>
+        
+        <section class="result-display" aria-labelledby="result-title">
+            <h2 id="result-title" class="sr-only">检定结果</h2>
+            <div class="result-text" id="result-text" role="status">点击骰子，让命运之轮转动</div>
+            <div class="result-value" id="result-value" aria-live="polite"></div>
+            <div class="result-interpretation" id="result-interpretation"></div>
+        </section>
+        
+        <section class="controls" aria-labelledby="controls-title">
+            <h2 id="controls-title" class="sr-only">操作控制</h2>
+            <button class="roll-btn epic-btn" id="roll-btn" onclick="rollDice()">
+                <span class="btn-bg"></span>
+                <span class="btn-content">
+                    <span class="btn-text">投掷命运</span>
+                    <span class="btn-icon">⚂</span>
+                </span>
+            </button>
+            <button class="send-to-chat-btn secondary-btn" id="send-to-chat-btn" onclick="sendToChat()" disabled>
+                <span class="btn-bg"></span>
+                <span class="btn-content">传达结果</span>
+            </button>
+        </section>
+        
+        <section class="history-scroll" aria-labelledby="history-title">
+            <h3 id="history-title" class="history-title">
+                <span class="title-icon">📜</span>
+                命运记录
+            </h3>
+            <div class="history-list" id="history-list" role="log" aria-label="历史记录列表">
+                <div class="history-empty">~ 空白的卷轴等待书写 ~</div>
+            </div>
+            <button class="clear-history-btn danger-btn" onclick="clearHistory()">
+                <span class="btn-bg"></span>
+                <span class="btn-content">清除记录</span>
+            </button>
+        </section>
+        
+        <footer class="game-lore">
+            <div class="lore-content">
+                <p class="lore-text">在这神秘的百面之骰中，蕴含着命运的无穷可能</p>
+                <p class="lore-subtext">每一次投掷，都是对未知的探索与挑战</p>
+            </div>
+        </footer>
+    </main>
+    
+    <script src="script.js"></script>
+</body>
+</html>

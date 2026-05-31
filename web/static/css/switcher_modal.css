@@ -1,0 +1,468 @@
+/* ============================================================
+   switcher_modal.css — 通用切换弹窗样式
+   ------------------------------------------------------------
+   合并自 role_switcher_modal.css 与 player_switcher_modal.css。
+   覆盖：modal-overlay、modal-container、modal-header、搜索区、
+         列表网格、卡片项、加载/空状态、底部操作。
+
+   兼容策略：
+     - 保留 .role-item / .player-item 类供既有 JS 渲染复用
+     - 保留 .roles-grid / .players-grid 类
+     - 旁白角色专用样式仍保留
+     - 旧的 .modal-overlay / .modal-container 行为保持不变
+   ============================================================ */
+
+/* ---------- overlay & container ---------- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 10, 26, 0.8);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-container {
+    background: #0f0f1f;
+    border-radius: 15px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 143, 0, 0.3);
+    width: 100%;
+    max-width: 520px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s ease;
+    border: 2px solid #ff8f00;
+}
+
+.modal-overlay.show .modal-container {
+    transform: scale(1) translateY(0);
+}
+
+/* ---------- header ---------- */
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #2a2a3a;
+    flex-shrink: 0;
+}
+
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffd700;
+    margin: 0;
+    font-family: 'Cinzel', serif;
+}
+
+.close-btn {
+    width: 32px;
+    height: 32px;
+    background: #151525;
+    border: 1px solid #2a2a3a;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    color: #c9c9c9;
+    transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+    background: #2a2a3a;
+    color: #ffd700;
+    border-color: #ff8f00;
+}
+
+.close-btn:active {
+    transform: scale(0.95);
+}
+
+/* ---------- search ---------- */
+.search-container {
+    padding: 16px 24px;
+    border-bottom: 1px solid #2a2a3a;
+    flex-shrink: 0;
+}
+
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    width: 100%;
+    height: 44px;
+    padding: 0 40px 0 16px;
+    border: 2px solid #2a2a3a;
+    border-radius: 12px;
+    font-size: 16px;
+    background: #151525;
+    color: #e8e3d3;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.search-input::placeholder {
+    color: #757575;
+}
+
+.search-input:focus {
+    border-color: #ff8f00;
+    background: #0f0f1f;
+    box-shadow: 0 0 0 3px rgba(255, 143, 0, 0.1);
+}
+
+.search-clear-btn {
+    position: absolute;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: #4a148c;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    color: #fff;
+    transition: all 0.2s ease;
+}
+
+.search-clear-btn:hover { background: #6a1b9a; }
+.search-clear-btn.show { display: flex; }
+
+/* ---------- list 容器（共用 .roles-grid / .players-grid 行为） ---------- */
+.roles-container,
+.players-container {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    min-height: 300px;
+}
+
+.roles-grid,
+.players-grid {
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 12px;
+    max-height: 360px;
+    overflow-y: auto;
+}
+
+/* ---------- 列表项（角色 / 玩家共享） ---------- */
+.role-item,
+.player-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 8px;
+    border: 2px solid #2a2a3a;
+    border-radius: 12px;
+    background: #151525;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    position: relative;
+    min-height: 90px;
+}
+
+.role-item:hover,
+.player-item:hover {
+    border-color: #ff8f00;
+    background: #1a1a2a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 143, 0, 0.2);
+}
+
+.role-item.selected,
+.player-item.selected {
+    border-color: #ff8f00;
+    background: #2a1a0a;
+}
+
+.role-item.current,
+.player-item.current {
+    border-color: #ffd700;
+    background: #2a2a0a;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+/* ---------- 头像 ---------- */
+.role-avatar,
+.player-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #0f0f1f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    border: 2px solid #ff8f00;
+    position: relative;
+}
+
+.role-avatar img,
+.player-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.role-fallback,
+.player-fallback {
+    display: none;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: #c9c9c9;
+}
+
+/* ---------- 名称 ---------- */
+.role-name,
+.player-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #e8e3d3;
+    word-break: break-word;
+    line-height: 1.2;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ---------- 状态点 ---------- */
+.role-status,
+.player-status {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ffd700;
+    display: none;
+    box-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
+}
+
+.role-item.current .role-status,
+.player-item.current .player-status {
+    display: block;
+}
+
+/* ---------- loading / empty ---------- */
+.loading-state,
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    color: #c9c9c9;
+    min-height: 200px;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #2a2a3a;
+    border-top: 3px solid #ff8f00;
+    border-radius: 50%;
+    animation: switcher-spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes switcher-spin {
+    to { transform: rotate(360deg); }
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    margin: 0 0 8px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.empty-state small {
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+/* ---------- footer ---------- */
+.modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px 20px;
+    border-top: 1px solid #2a2a3a;
+    flex-shrink: 0;
+}
+
+.footer-info { display: flex; align-items: center; }
+
+.role-count,
+.player-count {
+    font-size: 14px;
+    color: #c9c9c9;
+}
+
+.footer-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-secondary,
+.btn-primary {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 80px;
+}
+
+.btn-secondary {
+    background: #2a2a3a;
+    color: #e8e3d3;
+}
+
+.btn-secondary:hover {
+    background: #3a3a4a;
+    color: #ffd700;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #ff8f00, #ff6f00);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #ff6f00, #e65100);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 143, 0, 0.3);
+}
+
+/* ============================================================
+   旁白角色（仅 role-item 使用）
+   ============================================================ */
+.role-item.narrator-role {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 152, 0, 0.05));
+    border: 2px solid rgba(255, 193, 7, 0.3);
+}
+
+.role-item.narrator-role:hover {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 152, 0, 0.1));
+    border-color: rgba(255, 193, 7, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+}
+
+.role-item.narrator-role.current {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.3), rgba(255, 152, 0, 0.2));
+    border-color: #ffc107;
+    box-shadow: 0 0 15px rgba(255, 193, 7, 0.4);
+}
+
+.role-item.narrator-role .role-name {
+    color: #ffc107;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.narrator-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    z-index: 2;
+    animation: pulse-narrator 2s infinite;
+}
+
+@keyframes pulse-narrator {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.narrator-info {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    background: rgba(255, 193, 7, 0.9);
+    color: #000;
+    border-radius: 10px;
+    padding: 2px 6px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.bound-count {
+    display: flex;
+    align-items: center;
+}
+
+.bound-count::before {
+    content: '👥';
+    margin-right: 2px;
+    font-size: 0.8em;
+}
+
+/* ============================================================
+   响应式
+   ============================================================ */
+@media (max-width: 480px) {
+    .modal-container { max-width: 100%; max-height: 92vh; border-radius: 12px; }
+    .roles-grid,
+    .players-grid {
+        grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+        gap: 8px;
+        padding: 12px 14px;
+    }
+    .modal-header,
+    .modal-footer { padding-left: 16px; padding-right: 16px; }
+    .search-container { padding-left: 16px; padding-right: 16px; }
+}

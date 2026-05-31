@@ -1,0 +1,52 @@
+{# ============================================================
+   partials/form_modal.html
+   ------------------------------------------------------------
+   通用编辑/表单弹窗骨架。
+   仅渲染外壳与 footer 按钮区，表单字段由调用方注入。
+
+   参数：
+     - id: modal id（必传）
+     - title_id: 标题元素 id（用于 JS 在新建/编辑间切换文案）
+     - title_text: 默认标题文案
+     - size: sm | md（默认） | lg
+     - on_close: 关闭按钮 onclick
+     - on_submit: 主按钮 onclick
+     - submit_text: 主按钮文案
+     - on_delete: 可选，删除按钮 onclick；不传则不渲染删除按钮
+     - delete_id: 删除按钮 id（用于在新建态隐藏）
+     - body: 调用方在 caller() 中渲染表单内容
+   ============================================================ #}
+<div id="{{ id }}" class="modal2">
+    <div class="modal2__container modal2__container--{{ size|default('md') }}">
+        <div class="modal2__header">
+            <h2 id="{{ title_id|default(id ~ 'Title') }}" class="modal2__title">
+                {{ title_text|default('编辑') }}
+            </h2>
+            <button type="button" class="modal2__close"
+                    onclick="{{ on_close|default('this.closest(\'.modal2\').classList.remove(\'is-open\')') }}"
+                    aria-label="关闭">×</button>
+        </div>
+        <div class="modal2__body">
+            {{ caller() if caller is defined else '' }}
+        </div>
+        <div class="modal2__footer">
+            <div class="modal2__footer-actions">
+                <button type="button" class="btn btn--secondary"
+                        onclick="{{ on_close|default('this.closest(\'.modal2\').classList.remove(\'is-open\')') }}">
+                    取消
+                </button>
+                {% if on_delete %}
+                <button type="button" class="btn btn--danger"
+                        id="{{ delete_id|default(id ~ 'Delete') }}"
+                        onclick="{{ on_delete }}"
+                        style="display: none;">
+                    删除
+                </button>
+                {% endif %}
+                <button type="button" class="btn btn--primary" onclick="{{ on_submit }}">
+                    {{ submit_text|default('保存') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

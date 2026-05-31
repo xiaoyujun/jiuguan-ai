@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>头像交互测试</title>
+    <script src="/static/js/user_attributes.js"></script>
+</head>
+<body>
+    <h1>头像交互测试</h1>
+    <div>
+        <img id="testAvatar" src="/static/images/default-avatar.svg" alt="测试头像" 
+             style="width: 50px; height: 50px; border-radius: 50%; cursor: pointer;">
+        <p>点击头像应该打开属性页面，长按0.2秒应该显示@功能</p>
+    </div>
+    
+    <input type="text" id="message" placeholder="消息输入框" style="width: 300px; margin-top: 20px;">
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('页面加载完成');
+            console.log('UserAttributes:', window.UserAttributes);
+            console.log('queueAvatarBinding:', window.queueAvatarBinding);
+            
+            // 等待一下再绑定，确保UserAttributes已经加载
+            setTimeout(() => {
+                const testAvatar = document.getElementById('testAvatar');
+                if (window.queueAvatarBinding) {
+                    console.log('绑定测试头像交互');
+                    window.queueAvatarBinding(testAvatar, '测试角色', false);
+                } else {
+                    console.error('queueAvatarBinding函数不存在');
+                }
+            }, 200);
+        });
+    </script>
+</body>
+</html>

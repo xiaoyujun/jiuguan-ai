@@ -1,0 +1,16 @@
+{# ============================================================
+   partials/loading_state.html
+   ------------------------------------------------------------
+   通用加载态。
+
+   参数：
+     - id: 容器 id（可选）
+     - text: 加载文案
+     - hidden: 默认是否隐藏
+   ============================================================ #}
+<div class="loading-state2"
+     {% if id %}id="{{ id }}"{% endif %}
+     {% if hidden %}style="display: none;"{% endif %}>
+    <div class="loading-state2__spinner"></div>
+    <p>{{ text|default('正在加载...') }}</p>
+</div>

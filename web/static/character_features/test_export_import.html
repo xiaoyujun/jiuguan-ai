@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角色导出导入功能测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #2a2a2a;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            background: #333;
+        }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        .info { border-left: 4px solid #17a2b8; }
+    </style>
+</head>
+<body>
+    <h1>角色导出导入功能测试</h1>
+    
+    <div class="test-section">
+        <h2>测试数据生成</h2>
+        <p>生成测试用的角色数据</p>
+        <button class="test-button" onclick="generateTestData()">生成测试角色数据</button>
+        <div id="test-data-result" class="test-result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>数据嵌入测试</h2>
+        <p>测试将角色数据嵌入到图片中</p>
+        <button class="test-button" onclick="testDataEmbedding()">测试数据嵌入</button>
+        <div id="embed-result" class="test-result" style="display: none;"></div>
+        <canvas id="test-canvas" style="border: 1px solid #666; margin: 10px 0;"></canvas>
+    </div>
+    
+    <div class="test-section">
+        <h2>数据提取测试</h2>
+        <p>测试从图片中提取角色数据</p>
+        <input type="file" id="test-image-input" accept="image/*">
+        <button class="test-button" onclick="testDataExtraction()">测试数据提取</button>
+        <div id="extract-result" class="test-result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>完整流程测试</h2>
+        <p>测试导出->导入的完整流程</p>
+        <button class="test-button" onclick="testFullWorkflow()">测试完整流程</button>
+        <div id="workflow-result" class="test-result" style="display: none;"></div>
+    </div>
+
+    <script>
+        // 测试用的角色数据
+        let testCharacterData = null;
+        let testImageBlob = null;
+
+        function generateTestData() {
+            testCharacterData = {
+                "名字": "测试角色Luna",
+                "role_name": "测试角色Luna",
+                "category": "npc",
+                "tags": ["测试", "AI生成", "魔法师"],
+                "介绍": "这是一个用于测试导出导入功能的测试角色。她是一位年轻的魔法师，拥有金色的长发和蓝色的眼睛。",
+                "开场白": "你好！我是Luna，很高兴见到你！",
+                "voice_id": "test_voice",
+                "export_metadata": {
+                    "export_version": "1.0",
+                    "export_time": new Date().toISOString(),
+                    "exporter": "character_exporter_v1"
+                },
+                "has_storybook": true,
+                "storybook_data": {
+                    "总结词": ["魔法师", "年轻", "友善"],
+                    "关键词": ["魔法", "学院", "火系"],
+                    "属性": {
+                        "专长": "火系魔法",
+                        "外貌特征": "金发蓝眼，身高165cm",
+                        "属性": {
+                            "力量": "70/100",
+                            "智力": "95/100",
+                            "魅力": "85/100"
+                        }
+                    },
+                    "事件": [
+                        {
+                            "时间": "学院一年级",
+                            "事件": "首次掌握火球术",
+                            "重要性": "高"
+                        }
+                    ]
+                }
+            };
+            
+            const resultDiv = document.getElementById('test-data-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result success';
+            resultDiv.innerHTML = `
+                <h4>测试数据生成成功</h4>
+                <pre>${JSON.stringify(testCharacterData, null, 2)}</pre>
+            `;
+        }
+
+        async function testDataEmbedding() {
+            if (!testCharacterData) {
+                alert('请先生成测试数据');
+                return;
+            }
+
+            try {
+                const canvas = document.getElementById('test-canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // 创建一个简单的测试图片
+                canvas.width = 256;
+                canvas.height = 256;
+                
+                // 绘制一个渐变背景
+                const gradient = ctx.createLinearGradient(0, 0, 256, 256);
+                gradient.addColorStop(0, '#ff6b6b');
+                gradient.addColorStop(1, '#4ecdc4');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, 256, 256);
+                
+                // 添加一些图案
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                for (let i = 0; i < 20; i++) {
+                    ctx.beginPath();
+                    ctx.arc(
+                        Math.random() * 256,
+                        Math.random() * 256,
+                        Math.random() * 10 + 5,
+                        0, 2 * Math.PI
+                    );
+                    ctx.fill();
+                }
+                
+                // 嵌入数据（模拟CharacterExporter的逻辑）
+                const dataString = JSON.stringify(testCharacterData);
+                const header = 'CHARACTER_DATA_V1:';
+                const fullText = header + dataString + ':END_CHARACTER_DATA';
+                const textBytes = new TextEncoder().encode(fullText);
+                
+                const imageData = ctx.getImageData(0, 0, 256, 256);
+                const data = imageData.data;
+                
+                // 检查空间是否足够
+                const maxBytes = Math.floor(data.length / 8);
+                if (textBytes.length > maxBytes) {
+                    throw new Error('数据太大，无法嵌入');
+                }
+                
+                // 嵌入长度信息
+                const lengthBytes = new Uint8Array(4);
+                new DataView(lengthBytes.buffer).setUint32(0, textBytes.length, false);
+                
+                for (let i = 0; i < 32; i++) {
+                    const byteIndex = Math.floor(i / 8);
+                    const bitIndex = i % 8;
+                    const bit = (lengthBytes[byteIndex] >> (7 - bitIndex)) & 1;
+                    data[i] = (data[i] & 0xFE) | bit;
+                }
+                
+                // 嵌入文本数据
+                for (let i = 0; i < textBytes.length; i++) {
+                    const byte = textBytes[i];
+                    for (let bit = 0; bit < 8; bit++) {
+                        const dataIndex = 32 + i * 8 + bit;
+                        if (dataIndex < data.length) {
+                            const bitValue = (byte >> (7 - bit)) & 1;
+                            data[dataIndex] = (data[dataIndex] & 0xFE) | bitValue;
+                        }
+                    }
+                }
+                
+                ctx.putImageData(imageData, 0, 0);
+                
+                // 转换为blob
+                canvas.toBlob((blob) => {
+                    testImageBlob = blob;
+                    
+                    const resultDiv = document.getElementById('embed-result');
+                    resultDiv.style.display = 'block';
+                    resultDiv.className = 'test-result success';
+                    resultDiv.innerHTML = `
+                        <h4>数据嵌入成功</h4>
+                        <p>数据大小: ${textBytes.length} 字节</p>
+                        <p>图片大小: ${(blob.size / 1024).toFixed(2)} KB</p>
+                        <button class="test-button" onclick="downloadTestImage()">下载测试图片</button>
+                    `;
+                }, 'image/png', 1.0);
+                
+            } catch (error) {
+                const resultDiv = document.getElementById('embed-result');
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `<h4>数据嵌入失败</h4><p>${error.message}</p>`;
+            }
+        }
+
+        function downloadTestImage() {
+            if (testImageBlob) {
+                const url = URL.createObjectURL(testImageBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = '测试角色Luna_exported.png';
+                link.click();
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        async function testDataExtraction() {
+            const fileInput = document.getElementById('test-image-input');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('请选择一个图片文件');
+                return;
+            }
+
+            try {
+                const resultDiv = document.getElementById('extract-result');
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'test-result info';
+                resultDiv.innerHTML = '<h4>正在提取数据...</h4>';
+                
+                // 使用与CharacterExporter相同的提取逻辑
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                const img = await loadImage(file);
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                
+                const extractedText = extractTextFromCanvas(ctx, canvas.width, canvas.height);
+                
+                if (!extractedText) {
+                    throw new Error('图片中未找到角色数据');
+                }
+                
+                const header = 'CHARACTER_DATA_V1:';
+                const footer = ':END_CHARACTER_DATA';
+                
+                if (!extractedText.startsWith(header) || !extractedText.endsWith(footer)) {
+                    throw new Error('数据格式不正确');
+                }
+                
+                const jsonText = extractedText.slice(header.length, -footer.length);
+                const extractedData = JSON.parse(jsonText);
+                
+                resultDiv.className = 'test-result success';
+                resultDiv.innerHTML = `
+                    <h4>数据提取成功</h4>
+                    <p>角色名称: ${extractedData.名字 || extractedData.role_name}</p>
+                    <p>角色类型: ${extractedData.category === 'narrator' ? '旁白角色' : 'NPC角色'}</p>
+                    <p>包含数据书: ${extractedData.has_storybook ? '是' : '否'}</p>
+                    <details>
+                        <summary>完整数据</summary>
+                        <pre>${JSON.stringify(extractedData, null, 2)}</pre>
+                    </details>
+                `;
+                
+            } catch (error) {
+                const resultDiv = document.getElementById('extract-result');
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `<h4>数据提取失败</h4><p>${error.message}</p>`;
+            }
+        }
+
+        function loadImage(file) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = URL.createObjectURL(file);
+            });
+        }
+
+        function extractTextFromCanvas(ctx, width, height) {
+            try {
+                const imageData = ctx.getImageData(0, 0, width, height);
+                const data = imageData.data;
+                
+                // 提取长度信息
+                let length = 0;
+                for (let i = 0; i < 32; i++) {
+                    const bit = data[i] & 1;
+                    length = (length << 1) | bit;
+                }
+                
+                if (length <= 0 || length > 1000000) {
+                    return null;
+                }
+                
+                // 提取文本数据
+                const textBytes = new Uint8Array(length);
+                for (let i = 0; i < length; i++) {
+                    let byte = 0;
+                    for (let bit = 0; bit < 8; bit++) {
+                        const dataIndex = 32 + i * 8 + bit;
+                        if (dataIndex < data.length) {
+                            const bitValue = data[dataIndex] & 1;
+                            byte = (byte << 1) | bitValue;
+                        }
+                    }
+                    textBytes[i] = byte;
+                }
+                
+                return new TextDecoder().decode(textBytes);
+                
+            } catch (error) {
+                console.error('提取文本数据失败:', error);
+                return null;
+            }
+        }
+
+        async function testFullWorkflow() {
+            const resultDiv = document.getElementById('workflow-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result info';
+            resultDiv.innerHTML = '<h4>正在测试完整流程...</h4>';
+            
+            try {
+                // 1. 生成测试数据
+                if (!testCharacterData) {
+                    generateTestData();
+                }
+                
+                // 2. 嵌入数据到图片
+                if (!testImageBlob) {
+                    await testDataEmbedding();
+                }
+                
+                // 3. 提取数据验证
+                if (testImageBlob) {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    const img = await loadImageFromBlob(testImageBlob);
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    
+                    const extractedText = extractTextFromCanvas(ctx, canvas.width, canvas.height);
+                    const header = 'CHARACTER_DATA_V1:';
+                    const footer = ':END_CHARACTER_DATA';
+                    const jsonText = extractedText.slice(header.length, -footer.length);
+                    const extractedData = JSON.parse(jsonText);
+                    
+                    // 验证数据完整性
+                    const isValid = 
+                        extractedData.名字 === testCharacterData.名字 &&
+                        extractedData.category === testCharacterData.category &&
+                        extractedData.has_storybook === testCharacterData.has_storybook;
+                    
+                    if (isValid) {
+                        resultDiv.className = 'test-result success';
+                        resultDiv.innerHTML = `
+                            <h4>✅ 完整流程测试成功</h4>
+                            <p>✓ 数据生成: 成功</p>
+                            <p>✓ 数据嵌入: 成功</p>
+                            <p>✓ 数据提取: 成功</p>
+                            <p>✓ 数据验证: 完整性检查通过</p>
+                            <p><strong>导出导入功能可以正常使用！</strong></p>
+                        `;
+                    } else {
+                        throw new Error('数据验证失败，提取的数据与原始数据不匹配');
+                    }
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `<h4>❌ 完整流程测试失败</h4><p>${error.message}</p>`;
+            }
+        }
+
+        function loadImageFromBlob(blob) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = URL.createObjectURL(blob);
+            });
+        }
+    </script>
+</body>
+</html>

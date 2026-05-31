@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>导出导入功能测试</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .test-container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #2a2a2a;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover { background: #0056b3; }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            background: #333;
+        }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        .info { border-left: 4px solid #17a2b8; }
+        .log-area {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 导出导入功能测试</h1>
+        
+        <div class="test-section">
+            <h2>📊 功能状态检查</h2>
+            <button class="test-button" onclick="checkFunctionality()">检查功能状态</button>
+            <div id="status-result" class="test-result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📤 导出功能测试</h2>
+            <p>测试角色导出功能和数据嵌入</p>
+            <button class="test-button" onclick="testExportFunction()">测试导出功能</button>
+            <div id="export-test-result" class="test-result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📥 导入功能测试</h2>
+            <p>测试角色导入和数据提取</p>
+            <input type="file" id="import-test-file" accept="image/*" style="margin: 10px 0;">
+            <button class="test-button" onclick="testImportFunction()">测试导入功能</button>
+            <div id="import-test-result" class="test-result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🔗 API连接测试</h2>
+            <p>测试与后端API的连接</p>
+            <button class="test-button" onclick="testAPIConnection()">测试API连接</button>
+            <div id="api-test-result" class="test-result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📝 测试日志</h2>
+            <div id="log-area" class="log-area"></div>
+            <button class="test-button" onclick="clearLog()">清空日志</button>
+        </div>
+    </div>
+
+    <!-- 加载必要的库和模块 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="{{ url_for('static', filename='character_features/character_importer.js') }}"></script>
+    <script src="{{ url_for('static', filename='character_features/character_exporter.js') }}"></script>
+    <script src="{{ url_for('static', filename='character_features/index.js') }}"></script>
+    
+    <script>
+        // 日志功能
+        function log(message, type = 'info') {
+            const logArea = document.getElementById('log-area');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}\n`;
+            logArea.textContent += logEntry;
+            logArea.scrollTop = logArea.scrollHeight;
+            
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('log-area').textContent = '';
+        }
+
+        // 模拟CharacterManagement类
+        const mockCharacterManagement = {
+            characters: [
+                {
+                    name: '测试角色Luna',
+                    category: 'npc',
+                    tags: ['测试', '魔法师'],
+                    created: '2025-01-01'
+                }
+            ],
+            showNotification: function(message, type) {
+                log(`通知[${type}]: ${message}`);
+            }
+        };
+
+        // 功能状态检查
+        function checkFunctionality() {
+            const resultDiv = document.getElementById('status-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result info';
+            
+            let statusHTML = '<h4>功能状态检查</h4>';
+            let allGood = true;
+            
+            // 检查必要的类
+            const requiredClasses = {
+                'CharacterExporter': window.CharacterExporter,
+                'CharacterImporter': window.CharacterImporter,
+                'CharacterFeatures': window.CharacterFeatures,
+                'JSZip': window.JSZip
+            };
+            
+            statusHTML += '<ul>';
+            for (const [name, cls] of Object.entries(requiredClasses)) {
+                if (cls) {
+                    statusHTML += `<li>✅ ${name} - 已加载</li>`;
+                    log(`✅ ${name} 已加载`);
+                } else {
+                    statusHTML += `<li>❌ ${name} - 未找到</li>`;
+                    log(`❌ ${name} 未找到`);
+                    allGood = false;
+                }
+            }
+            statusHTML += '</ul>';
+            
+            if (allGood) {
+                resultDiv.className = 'test-result success';
+                statusHTML += '<p><strong>✅ 所有必要组件已就绪！</strong></p>';
+                log('✅ 所有必要组件已就绪');
+            } else {
+                resultDiv.className = 'test-result error';
+                statusHTML += '<p><strong>❌ 部分组件缺失，功能可能不完整</strong></p>';
+                log('❌ 部分组件缺失');
+            }
+            
+            resultDiv.innerHTML = statusHTML;
+        }
+
+        // 测试导出功能
+        async function testExportFunction() {
+            const resultDiv = document.getElementById('export-test-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result info';
+            resultDiv.innerHTML = '<h4>正在测试导出功能...</h4>';
+            
+            log('开始测试导出功能...');
+            
+            try {
+                if (!window.CharacterExporter) {
+                    throw new Error('CharacterExporter 类未加载');
+                }
+                
+                // 创建导出器实例
+                const exporter = new window.CharacterExporter(mockCharacterManagement);
+                log('✅ CharacterExporter 实例创建成功');
+                
+                // 测试数据嵌入功能
+                const testData = {
+                    "名字": "测试角色",
+                    "role_name": "测试角色",
+                    "category": "npc",
+                    "export_metadata": {
+                        "export_version": "1.0",
+                        "exporter": "character_exporter_v1"
+                    }
+                };
+                
+                // 创建测试图片
+                const canvas = document.createElement('canvas');
+                canvas.width = 100;
+                canvas.height = 100;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ff6b6b';
+                ctx.fillRect(0, 0, 100, 100);
+                
+                const imageBlob = await new Promise(resolve => {
+                    canvas.toBlob(resolve, 'image/png');
+                });
+                
+                const processedBlob = await exporter.embedDataInImage(imageBlob, testData);
+                log('✅ 数据嵌入测试成功');
+                
+                // 测试数据提取
+                const extractedData = await window.CharacterExporter.extractCharacterDataFromImage({
+                    arrayBuffer: () => processedBlob.arrayBuffer()
+                });
+                
+                if (extractedData && extractedData.名字 === testData.名字) {
+                    log('✅ 数据提取验证成功');
+                    resultDiv.className = 'test-result success';
+                    resultDiv.innerHTML = `
+                        <h4>✅ 导出功能测试成功</h4>
+                        <p>✓ 导出器实例创建</p>
+                        <p>✓ 数据嵌入功能</p>
+                        <p>✓ 数据提取验证</p>
+                        <p><strong>导出功能完全正常！</strong></p>
+                    `;
+                } else {
+                    throw new Error('数据提取验证失败');
+                }
+                
+            } catch (error) {
+                log(`❌ 导出功能测试失败: ${error.message}`);
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `
+                    <h4>❌ 导出功能测试失败</h4>
+                    <p>错误: ${error.message}</p>
+                `;
+            }
+        }
+
+        // 测试导入功能
+        async function testImportFunction() {
+            const fileInput = document.getElementById('import-test-file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('请先选择一个图片文件');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('import-test-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result info';
+            resultDiv.innerHTML = '<h4>正在测试导入功能...</h4>';
+            
+            log(`开始测试导入功能，文件: ${file.name}`);
+            
+            try {
+                if (!window.CharacterImporter) {
+                    throw new Error('CharacterImporter 类未加载');
+                }
+                
+                const importer = new window.CharacterImporter(mockCharacterManagement);
+                log('✅ CharacterImporter 实例创建成功');
+                
+                const extractedData = await importer.extractCharacterFromImage(file);
+                log('✅ 数据提取成功');
+                
+                if (extractedData && (extractedData.名字 || extractedData.role_name)) {
+                    log(`✅ 导入数据验证成功: ${extractedData.名字 || extractedData.role_name}`);
+                    resultDiv.className = 'test-result success';
+                    resultDiv.innerHTML = `
+                        <h4>✅ 导入功能测试成功</h4>
+                        <p>✓ 导入器实例创建</p>
+                        <p>✓ 数据提取成功</p>
+                        <p>✓ 角色名称: ${extractedData.名字 || extractedData.role_name}</p>
+                        <p>✓ 角色类型: ${extractedData.category || '未知'}</p>
+                        <p><strong>导入功能完全正常！</strong></p>
+                    `;
+                } else {
+                    throw new Error('提取的数据格式不正确');
+                }
+                
+            } catch (error) {
+                log(`❌ 导入功能测试失败: ${error.message}`);
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `
+                    <h4>❌ 导入功能测试失败</h4>
+                    <p>错误: ${error.message}</p>
+                    <p>这可能是因为图片中没有角色数据，或者格式不支持</p>
+                `;
+            }
+        }
+
+        // 测试API连接
+        async function testAPIConnection() {
+            const resultDiv = document.getElementById('api-test-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result info';
+            resultDiv.innerHTML = '<h4>正在测试API连接...</h4>';
+            
+            log('开始测试API连接...');
+            
+            const tests = [
+                { url: '/api/roles', name: '角色列表API' },
+                { url: '/api/storybooks', name: '数据书API' },
+                { url: '/static/images/default-avatar.svg', name: '默认头像' }
+            ];
+            
+            let results = [];
+            
+            for (const test of tests) {
+                try {
+                    const response = await fetch(test.url);
+                    if (response.ok) {
+                        results.push(`✅ ${test.name} - 正常 (${response.status})`);
+                        log(`✅ ${test.name} 连接正常`);
+                    } else {
+                        results.push(`⚠️ ${test.name} - ${response.status} ${response.statusText}`);
+                        log(`⚠️ ${test.name} 返回 ${response.status}`);
+                    }
+                } catch (error) {
+                    results.push(`❌ ${test.name} - 连接失败: ${error.message}`);
+                    log(`❌ ${test.name} 连接失败: ${error.message}`);
+                }
+            }
+            
+            const allGood = results.every(r => r.startsWith('✅'));
+            
+            resultDiv.className = allGood ? 'test-result success' : 'test-result error';
+            resultDiv.innerHTML = `
+                <h4>${allGood ? '✅' : '⚠️'} API连接测试结果</h4>
+                <ul>
+                    ${results.map(r => `<li>${r}</li>`).join('')}
+                </ul>
+            `;
+        }
+
+        // 页面加载完成后自动检查
+        window.addEventListener('load', function() {
+            log('页面加载完成，开始初始化检查...');
+            setTimeout(checkFunctionality, 1000);
+        });
+    </script>
+</body>
+</html>

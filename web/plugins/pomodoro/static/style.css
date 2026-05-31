@@ -1,0 +1,681 @@
+/**
+ * 炼金时钟插件 - 神秘学主题样式
+ * 符合"密教大会"项目的视觉风格
+ */
+
+/* 浮动窗口容器 */
+.pomodoro-floating-window {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 10000 !important;
+    animation: pomodoro-fade-in 0.3s ease-out;
+}
+
+/* 主窗口 */
+.pomodoro-window {
+    width: 360px;
+    background: linear-gradient(135deg, #0a0a1a 0%, #151525 50%, #1a0a2a 100%);
+    border: 2px solid #ff8f00;
+    border-radius: 15px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.8),
+        0 0 40px rgba(255, 143, 0, 0.3),
+        inset 0 1px 0 rgba(255, 143, 0, 0.2);
+    overflow: hidden;
+    font-family: 'Crimson Text', serif;
+    color: #e8e3d3;
+    position: relative;
+}
+
+/* 窗口顶部装饰 */
+.pomodoro-window::before {
+    content: '⧈ ⧈ ⧈ ⧈ ⧈ ⧈ ⧈ ⧈ ⧈ ⧈';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #ff8f00, transparent);
+    font-size: 8px;
+    color: #ff8f00;
+    text-align: center;
+    line-height: 2px;
+    letter-spacing: 12px;
+    z-index: 1;
+}
+
+/* 窗口底部装饰 */
+.pomodoro-window::after {
+    content: '☿ ♀ ⊕ ♂ ♃ ♄';
+    position: absolute;
+    bottom: 5px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 12px;
+    color: #ff8f00;
+    opacity: 0.3;
+    letter-spacing: 15px;
+    pointer-events: none;
+}
+
+/* 窗口头部 */
+.pomodoro-header {
+    padding: 15px 20px 12px;
+    background: linear-gradient(180deg, rgba(255, 143, 0, 0.1) 0%, transparent 100%);
+    border-bottom: 1px solid rgba(255, 143, 0, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.pomodoro-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    letter-spacing: 1.5px;
+}
+
+/* 关闭按钮 */
+.pomodoro-close-btn {
+    background: none;
+    border: none;
+    color: #ff8f00;
+    font-size: 24px;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.pomodoro-close-btn:hover {
+    background: rgba(255, 143, 0, 0.1);
+    transform: rotate(90deg);
+}
+
+/* 窗口主体 */
+.pomodoro-body {
+    padding: 20px 20px 20px;
+    position: relative;
+}
+
+/* 圆形计时器 */
+.pomodoro-timer-circle {
+    position: relative;
+    width: 240px;
+    height: 240px;
+    margin: 0 auto 20px;
+}
+
+/* SVG进度环 */
+.pomodoro-progress-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.pomodoro-progress-bg {
+    fill: none;
+    stroke: rgba(255, 143, 0, 0.1);
+    stroke-width: 4;
+}
+
+.pomodoro-progress-bar {
+    fill: none;
+    stroke: #ff8f00;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-dasharray: 283;
+    stroke-dashoffset: 283;
+    transition: stroke-dashoffset 0.5s ease;
+    filter: drop-shadow(0 0 8px rgba(255, 143, 0, 0.6));
+}
+
+/* 计时器内容 */
+.pomodoro-timer-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+/* 时间显示 */
+.pomodoro-time {
+    font-size: 48px;
+    font-weight: 600;
+    color: #ffd700;
+    text-shadow: 
+        0 0 20px rgba(255, 215, 0, 0.6),
+        0 0 40px rgba(255, 215, 0, 0.3);
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* 状态显示 */
+.pomodoro-status {
+    font-size: 14px;
+    color: #c9c9c9;
+    opacity: 0.8;
+    letter-spacing: 1.5px;
+}
+
+/* 控制按钮区域 */
+.pomodoro-controls {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 18px;
+}
+
+/* 按钮基础样式 */
+.pomodoro-btn {
+    padding: 10px 20px;
+    border: 2px solid;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Crimson Text', serif;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.pomodoro-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.pomodoro-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.pomodoro-btn span {
+    position: relative;
+    z-index: 1;
+}
+
+/* 主要按钮 */
+.pomodoro-btn-primary {
+    background: linear-gradient(135deg, #ff8f00 0%, #ff6f00 100%);
+    border-color: #ffb74d;
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(255, 143, 0, 0.4);
+}
+
+.pomodoro-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 143, 0, 0.6);
+}
+
+.pomodoro-btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 警告按钮 */
+.pomodoro-btn-warning {
+    background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+    border-color: #ba68c8;
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
+}
+
+.pomodoro-btn-warning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(156, 39, 176, 0.6);
+}
+
+.pomodoro-btn-warning:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 次要按钮 */
+.pomodoro-btn-secondary {
+    background: linear-gradient(135deg, #424242 0%, #212121 100%);
+    border-color: #757575;
+    color: #e8e3d3;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.pomodoro-btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+.pomodoro-btn-secondary:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 链接按钮 */
+.pomodoro-btn-link {
+    background: transparent;
+    border-color: transparent;
+    color: #ff8f00;
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+.pomodoro-btn-link:hover {
+    background: rgba(255, 143, 0, 0.1);
+    border-color: rgba(255, 143, 0, 0.2);
+}
+
+/* 统计信息 */
+.pomodoro-stats {
+    text-align: center;
+    font-size: 13px;
+    color: #c9c9c9;
+    padding: 10px;
+    background: rgba(255, 143, 0, 0.05);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 143, 0, 0.1);
+    margin-bottom: 15px;
+}
+
+/* 页脚 */
+.pomodoro-footer {
+    text-align: center;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 143, 0, 0.1);
+}
+
+/* 设置面板（保留旧样式） */
+.pomodoro-settings-panel {
+    margin-top: 15px;
+    padding: 15px;
+    background: rgba(255, 143, 0, 0.05);
+    border: 1px solid rgba(255, 143, 0, 0.2);
+    border-radius: 6px;
+    animation: pomodoro-slide-down 0.3s ease-out;
+}
+
+.pomodoro-settings-panel h3 {
+    margin: 0 0 15px 0;
+    color: #ffd700;
+    font-size: 16px;
+    text-align: center;
+}
+
+/* 设置模态框内容 */
+.pomodoro-settings-modal-content {
+    padding: 25px;
+    background: linear-gradient(135deg, #0a0a1a 0%, #151525 50%, #1a0a2a 100%);
+    border: 2px solid #ff8f00;
+    border-radius: 15px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.8),
+        0 0 40px rgba(255, 143, 0, 0.3);
+    color: #e8e3d3;
+    font-family: 'Crimson Text', serif;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+/* 设置项 */
+.pomodoro-setting-item {
+    margin-bottom: 12px;
+}
+
+.pomodoro-setting-item label {
+    display: block;
+    margin-bottom: 4px;
+    color: #c9c9c9;
+    font-size: 12px;
+}
+
+.pomodoro-setting-item input[type="number"],
+.pomodoro-setting-item input[type="text"],
+.pomodoro-setting-item textarea {
+    width: 100%;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 143, 0, 0.3);
+    border-radius: 4px;
+    color: #e8e3d3;
+    font-size: 12px;
+    font-family: 'Crimson Text', serif;
+    box-sizing: border-box;
+}
+
+.pomodoro-setting-item textarea {
+    min-height: 60px;
+    resize: vertical;
+}
+
+.pomodoro-setting-item input[type="number"]:focus,
+.pomodoro-setting-item input[type="text"]:focus,
+.pomodoro-setting-item textarea:focus {
+    outline: none;
+    border-color: #ff8f00;
+    box-shadow: 0 0 10px rgba(255, 143, 0, 0.3);
+}
+
+.pomodoro-setting-item input[type="checkbox"] {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+/* 设置操作按钮 */
+.pomodoro-setting-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.pomodoro-setting-actions button {
+    flex: 1;
+    padding: 8px 15px;
+    background: linear-gradient(135deg, #ff8f00 0%, #ff6f00 100%);
+    border: 1px solid #ffb74d;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Crimson Text', serif;
+}
+
+.pomodoro-setting-actions button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 143, 0, 0.5);
+}
+
+/* 模态框按钮样式 */
+.pomodoro-modal-btn {
+    width: 100%;
+    padding: 14px 20px;
+    border: 2px solid;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Crimson Text', serif;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    /* 增大触控区域，适合移动端 */
+    min-height: 48px;
+}
+
+.pomodoro-modal-btn span {
+    position: relative;
+    z-index: 1;
+}
+
+.pomodoro-modal-btn-primary {
+    background: linear-gradient(135deg, #ff8f00 0%, #ff6f00 100%);
+    border-color: #ffb74d;
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(255, 143, 0, 0.4);
+}
+
+.pomodoro-modal-btn-primary:hover,
+.pomodoro-modal-btn-primary:active {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 143, 0, 0.6);
+}
+
+.pomodoro-modal-btn-warning {
+    background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+    border-color: #ba68c8;
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
+}
+
+.pomodoro-modal-btn-warning:hover,
+.pomodoro-modal-btn-warning:active {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(156, 39, 176, 0.6);
+}
+
+.pomodoro-modal-btn-secondary {
+    background: linear-gradient(135deg, #424242 0%, #212121 100%);
+    border-color: #757575;
+    color: #e8e3d3;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.pomodoro-modal-btn-secondary:hover,
+.pomodoro-modal-btn-secondary:active {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+/* 动画 */
+@keyframes pomodoro-fade-in {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+@keyframes pomodoro-slide-down {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 脉冲动画（运行时） */
+@keyframes pomodoro-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.pomodoro-time.running {
+    animation: pomodoro-pulse 2s ease-in-out infinite;
+}
+
+/* 炼金术符号装饰 */
+.pomodoro-window .alchemy-symbol {
+    position: absolute;
+    font-size: 24px;
+    opacity: 0.1;
+    color: #ff8f00;
+    pointer-events: none;
+}
+
+.pomodoro-window .alchemy-symbol:nth-child(1) {
+    top: 60px;
+    left: 20px;
+}
+
+.pomodoro-window .alchemy-symbol:nth-child(2) {
+    top: 60px;
+    right: 20px;
+}
+
+.pomodoro-window .alchemy-symbol:nth-child(3) {
+    bottom: 60px;
+    left: 20px;
+}
+
+.pomodoro-window .alchemy-symbol:nth-child(4) {
+    bottom: 60px;
+    right: 20px;
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+    .pomodoro-window {
+        width: 95vw;
+        max-width: 340px;
+    }
+    
+    .pomodoro-timer-circle {
+        width: 200px;
+        height: 200px;
+    }
+    
+    .pomodoro-time {
+        font-size: 40px;
+    }
+    
+    .pomodoro-status {
+        font-size: 12px;
+    }
+    
+    .pomodoro-controls {
+        flex-direction: column;
+        gap: 6px;
+    }
+    
+    .pomodoro-btn {
+        width: 100%;
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+    
+    /* 移动端模态框优化 */
+    .pomodoro-settings-modal-content {
+        padding: 20px;
+        border-radius: 12px;
+        max-height: 90vh;
+    }
+    
+    .pomodoro-setting-item label {
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+    
+    .pomodoro-setting-item input[type="number"],
+    .pomodoro-setting-item input[type="text"],
+    .pomodoro-setting-item textarea {
+        padding: 12px;
+        font-size: 14px;
+        /* 防止iOS缩放 */
+        font-size: 16px;
+    }
+    
+    .pomodoro-setting-item input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+    }
+    
+    .pomodoro-modal-btn {
+        padding: 16px 20px;
+        font-size: 16px;
+        min-height: 52px;
+    }
+}
+
+/* 模态框样式 */
+.pomodoro-settings-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+    animation: fadeIn 0.3s ease;
+}
+
+.pomodoro-settings-modal-overlay.fade-out {
+    animation: fadeOut 0.3s ease forwards;
+}
+
+.pomodoro-settings-modal-content {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 2px solid #ffa500;
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 450px;
+    width: 90vw;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.8),
+        0 0 40px rgba(255, 165, 0, 0.3);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* 暗色模式优化 */
+@media (prefers-color-scheme: dark) {
+    .pomodoro-window {
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.9),
+            0 0 50px rgba(255, 143, 0, 0.4);
+    }
+}
+

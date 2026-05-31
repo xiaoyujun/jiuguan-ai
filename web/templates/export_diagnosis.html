@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角色导出诊断工具</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: #1a1a1a; 
+            color: #ffffff; 
+        }
+        .diagnosis-section { 
+            margin: 20px 0; 
+            padding: 20px; 
+            border: 1px solid #333; 
+            border-radius: 8px; 
+            background: #2a2a2a; 
+        }
+        .test-button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin: 5px; 
+        }
+        .test-button:hover { background: #0056b3; }
+        .test-button:disabled { background: #666; cursor: not-allowed; }
+        .test-result { 
+            margin: 10px 0; 
+            padding: 10px; 
+            border-radius: 4px; 
+            background: #333; 
+        }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        .warning { border-left: 4px solid #ffc107; color: #333; background: #fff3cd; }
+        .info { border-left: 4px solid #17a2b8; }
+        pre { background: #1e1e1e; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        canvas { border: 1px solid #666; margin: 10px 0; }
+        .step { margin: 15px 0; }
+        .step-number { 
+            display: inline-block; 
+            width: 25px; 
+            height: 25px; 
+            background: #007bff; 
+            color: white; 
+            text-align: center; 
+            line-height: 25px; 
+            border-radius: 50%; 
+            margin-right: 10px; 
+        }
+        .character-list { 
+            max-height: 200px; 
+            overflow-y: auto; 
+            border: 1px solid #555; 
+            border-radius: 4px; 
+            background: #222; 
+        }
+        .character-item { 
+            padding: 10px; 
+            border-bottom: 1px solid #444; 
+            cursor: pointer; 
+        }
+        .character-item:hover { background: #333; }
+        .character-item.selected { background: #007bff; }
+    </style>
+</head>
+<body>
+    <h1>🔧 角色导出诊断工具</h1>
+    <p>此工具用于诊断和测试角色导出导入功能的各个环节。</p>
+
+    <!-- 第1步：登录状态检查 -->
+    <div class="diagnosis-section">
+        <h2><span class="step-number">1</span>登录状态检查</h2>
+        <p>检查当前用户的登录状态和API访问权限</p>
+        <button class="test-button" onclick="checkLoginStatus()">检查登录状态</button>
+        <div id="loginResult" class="test-result" style="display: none;"></div>
+    </div>
+
+    <!-- 第2步：角色数据获取测试 -->
+    <div class="diagnosis-section">
+        <h2><span class="step-number">2</span>角色数据获取测试</h2>
+        <p>测试能否正常获取角色列表和角色详细信息</p>
+        <button class="test-button" onclick="loadCharacterList()">加载角色列表</button>
+        <div id="characterListResult" class="test-result" style="display: none;"></div>
+        <div id="characterList" class="character-list" style="display: none;"></div>
+        <div class="step" style="display: none;" id="characterTestStep">
+            <button class="test-button" onclick="testSelectedCharacter()" disabled id="testCharacterBtn">测试选中角色数据</button>
+            <div id="characterDataResult" class="test-result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- 第3步：数据书状态检查 -->
+    <div class="diagnosis-section">
+        <h2><span class="step-number">3</span>数据书状态检查</h2>
+        <p>检查角色的数据书绑定状态和内容</p>
+        <button class="test-button" onclick="testStorybookStatus()" disabled id="testStorybookBtn">检查数据书状态</button>
+        <div id="storybookResult" class="test-result" style="display: none;"></div>
+    </div>
+
+    <!-- 第4步：LSB隐写术测试 -->
+    <div class="diagnosis-section">
+        <h2><span class="step-number">4</span>LSB隐写术测试</h2>
+        <p>测试数据嵌入和提取算法是否正常工作</p>
+        <canvas id="testCanvas" width="256" height="256"></canvas>
+        <br>
+        <button class="test-button" onclick="testLSBEmbedding()">测试数据嵌入</button>
+        <button class="test-button" onclick="testLSBExtraction()" disabled id="testExtractionBtn">测试数据提取</button>
+        <div id="lsbResult" class="test-result" style="display: none;"></div>
+    </div>
+
+    <!-- 第5步：完整导出测试 -->
+    <div class="diagnosis-section">
+        <h2><span class="step-number">5</span>完整导出测试</h2>
+        <p>执行完整的角色导出流程</p>
+        <button class="test-button" onclick="testFullExport()" disabled id="testExportBtn">执行完整导出</button>
+        <div id="exportResult" class="test-result" style="display: none;"></div>
+    </div>
+
+    <!-- 第6步：导入验证测试 -->
+    <div class="diagnosis-section">
+        <h2><span class="step-number">6</span>导入验证测试</h2>
+        <p>验证导出的文件是否能正确导入</p>
+        <input type="file" id="importFileInput" accept="image/*" style="display: none;" onchange="testFileImport()">
+        <button class="test-button" onclick="document.getElementById('importFileInput').click()" disabled id="testImportBtn">选择导出文件测试导入</button>
+        <div id="importResult" class="test-result" style="display: none;"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='character_features/character_exporter.js') }}"></script>
+    <script src="{{ url_for('static', filename='character_features/character_importer.js') }}"></script>
+    <script>
+        let selectedCharacter = null;
+        let testExportBlob = null;
+        let testCharacterData = null;
+
+        // 第1步：检查登录状态
+        async function checkLoginStatus() {
+            const resultDiv = document.getElementById('loginResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<p>正在检查登录状态...</p>';
+            
+            try {
+                // 检查基本API访问
+                const response = await fetch('/api/check_login');
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.className = 'test-result success';
+                    resultDiv.innerHTML = `
+                        <h4>✅ 登录状态正常</h4>
+                        <p>用户已登录，可以访问API</p>
+                        <p>模块: ${result.module || '未知'}</p>
+                    `;
+                } else {
+                    resultDiv.className = 'test-result error';
+                    resultDiv.innerHTML = `
+                        <h4>❌ 登录状态异常</h4>
+                        <p>${result.error || '未知错误'}</p>
+                        <p><strong>建议：请重新登录系统</strong></p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `
+                    <h4>❌ 登录检查失败</h4>
+                    <p>无法检查登录状态: ${error.message}</p>
+                `;
+            }
+        }
+
+        // 第2步：加载角色列表
+        async function loadCharacterList() {
+            const resultDiv = document.getElementById('characterListResult');
+            const listDiv = document.getElementById('characterList');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<p>正在加载角色列表...</p>';
+            
+            try {
+                const response = await fetch('/api/roles');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success && result.roles) {
+                    resultDiv.className = 'test-result success';
+                    resultDiv.innerHTML = `
+                        <h4>✅ 角色列表加载成功</h4>
+                        <p>找到 ${result.roles.length} 个角色</p>
+                    `;
+                    
+                    // 显示角色列表
+                    listDiv.style.display = 'block';
+                    listDiv.innerHTML = result.roles.map(role => `
+                        <div class="character-item" onclick="selectCharacter('${role.name}')">
+                            <strong>${role.name}</strong> 
+                            <span style="color: #888;">(${role.category || '未分类'})</span>
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('characterTestStep').style.display = 'block';
+                } else {
+                    throw new Error(result.error || '返回数据格式不正确');
+                }
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `
+                    <h4>❌ 角色列表加载失败</h4>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+
+        // 选择角色
+        function selectCharacter(characterName) {
+            selectedCharacter = characterName;
+            
+            // 更新UI
+            document.querySelectorAll('.character-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+            
+            // 启用测试按钮
+            document.getElementById('testCharacterBtn').disabled = false;
+            document.getElementById('testStorybookBtn').disabled = false;
+            document.getElementById('testExportBtn').disabled = false;
+            
+            console.log('已选择角色:', characterName);
+        }
+
+        // 测试选中角色的数据
+        async function testSelectedCharacter() {
+            if (!selectedCharacter) {
+                alert('请先选择一个角色');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('characterDataResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<p>正在获取角色数据...</p>';
+            
+            try {
+                const response = await fetch(`/api/roles/${encodeURIComponent(selectedCharacter)}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const characterData = await response.json();
+                testCharacterData = characterData;
+                
+                resultDiv.className = 'test-result success';
+                resultDiv.innerHTML = `
+                    <h4>✅ 角色数据获取成功</h4>
+                    <p><strong>角色名称:</strong> ${characterData.名字 || characterData.name || selectedCharacter}</p>
+                    <p><strong>角色类型:</strong> ${characterData.角色类别 || characterData.category || '未知'}</p>
+                    <p><strong>绑定数据书:</strong> ${JSON.stringify(characterData.绑定数据书 || [])}</p>
+                    <details>
+                        <summary>完整数据</summary>
+                        <pre>${JSON.stringify(characterData, null, 2)}</pre>
+                    </details>
+                `;
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `
+                    <h4>❌ 角色数据获取失败</h4>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+
+        // 测试数据书状态
+        async function testStorybookStatus() {
+            if (!selectedCharacter) {
+                alert('请先选择一个角色');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('storybookResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<p>正在检查数据书状态...</p>';
+            
+            try {
+                // 使用导出器的方法检查数据书状态
+                const exporter = new CharacterExporter();
+                const hasStorybook = await exporter.checkStorybookStatus(selectedCharacter);
+                
+                if (hasStorybook) {
+                    // 尝试获取数据书内容
+                    try {
+                        const storybookResponse = await fetch(`/api/storybook/${encodeURIComponent(selectedCharacter)}`);
+                        let storybookContent = null;
+                        
+                        if (storybookResponse.ok) {
+                            const storybookResult = await storybookResponse.json();
+                            if (storybookResult.success) {
+                                storybookContent = storybookResult.data;
+                            }
+                        }
+                        
+                        resultDiv.className = 'test-result success';
+                        resultDiv.innerHTML = `
+                            <h4>✅ 角色有数据书</h4>
+                            <p><strong>数据书状态:</strong> 已绑定</p>
+                            <p><strong>内容获取:</strong> ${storybookContent ? '成功' : '失败'}</p>
+                            ${storybookContent ? `
+                                <details>
+                                    <summary>数据书内容</summary>
+                                    <pre>${JSON.stringify(storybookContent, null, 2)}</pre>
+                                </details>
+                            ` : ''}
+                        `;
+                    } catch (error) {
+                        resultDiv.className = 'test-result warning';
+                        resultDiv.innerHTML = `
+                            <h4>⚠️ 角色有数据书但读取失败</h4>
+                            <p>数据书绑定检查通过，但无法读取内容</p>
+                            <p>错误: ${error.message}</p>
+                        `;
+                    }
+                } else {
+                    resultDiv.className = 'test-result info';
+                    resultDiv.innerHTML = `
+                        <h4>ℹ️ 角色没有数据书</h4>
+                        <p>该角色未绑定数据书，或为旁白角色</p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `
+                    <h4>❌ 数据书状态检查失败</h4>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+
+        // 测试LSB嵌入
+        async function testLSBEmbedding() {
+            const resultDiv = document.getElementById('lsbResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<p>正在测试LSB隐写术...</p>';
+            
+            try {
+                const canvas = document.getElementById('testCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                // 创建测试图片
+                canvas.width = 256;
+                canvas.height = 256;
+                
+                const gradient = ctx.createLinearGradient(0, 0, 256, 256);
+                gradient.addColorStop(0, '#ff6b6b');
+                gradient.addColorStop(1, '#4ecdc4');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, 256, 256);
+                
+                // 测试数据
+                const testData = {
+                    名字: "测试角色",
+                    category: "npc",
+                    export_metadata: {
+                        export_version: "1.0",
+                        export_time: new Date().toISOString()
+                    }
+                };
+                
+                // 使用导出器的嵌入方法
+                canvas.toBlob(async (blob) => {
+                    try {
+                        const exporter = new CharacterExporter();
+                        testExportBlob = await exporter.embedDataInImage(blob, testData);
+                        
+                        resultDiv.className = 'test-result success';
+                        resultDiv.innerHTML = `
+                            <h4>✅ LSB数据嵌入成功</h4>
+                            <p>数据大小: ${JSON.stringify(testData).length} 字符</p>
+                            <p>图片大小: ${(testExportBlob.size / 1024).toFixed(2)} KB</p>
+                        `;
+                        
+                        document.getElementById('testExtractionBtn').disabled = false;
+                    } catch (error) {
+                        resultDiv.className = 'test-result error';
+                        resultDiv.innerHTML = `
+                            <h4>❌ LSB数据嵌入失败</h4>
+                            <p>${error.message}</p>
+                        `;
+                    }
+                }, 'image/png', 1.0);
+                
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `
+                    <h4>❌ LSB测试失败</h4>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+
+        // 测试LSB提取
+        async function testLSBExtraction() {
+            if (!testExportBlob) {
+                alert('请先执行数据嵌入测试');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('lsbResult');
+            resultDiv.innerHTML = '<p>正在测试数据提取...</p>';
+            
+            try {
+                // 将blob转换为文件对象
+                const file = new File([testExportBlob], 'test.png', { type: 'image/png' });
+                
+                // 使用导出器的提取方法
+                const extractedData = await CharacterExporter.extractCharacterDataFromImage(file);
+                
+                resultDiv.className = 'test-result success';
+                resultDiv.innerHTML = `
+                    <h4>✅ LSB数据提取成功</h4>
+                    <p>提取的角色名: ${extractedData.名字}</p>
+                    <p>提取的类型: ${extractedData.category}</p>
+                    <details>
+                        <summary>提取的完整数据</summary>
+                        <pre>${JSON.stringify(extractedData, null, 2)}</pre>
+                    </details>
+                `;
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `
+                    <h4>❌ LSB数据提取失败</h4>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+
+        // 测试完整导出
+        async function testFullExport() {
+            if (!selectedCharacter) {
+                alert('请先选择一个角色');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('exportResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<p>正在执行完整导出...</p>';
+            
+            try {
+                const exporter = new CharacterExporter();
+                
+                // 获取角色数据
+                resultDiv.innerHTML = '<p>1/3: 正在获取角色数据...</p>';
+                const characterData = await exporter.getCharacterData(selectedCharacter);
+                
+                // 获取头像
+                resultDiv.innerHTML = '<p>2/3: 正在获取角色头像...</p>';
+                const avatarBlob = await exporter.getCharacterAvatar(selectedCharacter);
+                
+                // 嵌入数据
+                resultDiv.innerHTML = '<p>3/3: 正在嵌入数据到图片...</p>';
+                testExportBlob = await exporter.embedDataInImage(avatarBlob, characterData);
+                
+                resultDiv.className = 'test-result success';
+                resultDiv.innerHTML = `
+                    <h4>✅ 完整导出成功</h4>
+                    <p><strong>角色名称:</strong> ${characterData.名字 || selectedCharacter}</p>
+                    <p><strong>数据书状态:</strong> ${characterData.has_storybook ? '包含' : '无'}</p>
+                    <p><strong>数据大小:</strong> ${JSON.stringify(characterData).length} 字符</p>
+                    <p><strong>图片大小:</strong> ${(testExportBlob.size / 1024).toFixed(2)} KB</p>
+                    <button class="test-button" onclick="downloadTestExport()">下载导出文件</button>
+                `;
+                
+                document.getElementById('testImportBtn').disabled = false;
+                
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `
+                    <h4>❌ 完整导出失败</h4>
+                    <p>${error.message}</p>
+                    <p><strong>建议检查:</strong></p>
+                    <ul>
+                        <li>登录状态是否正常</li>
+                        <li>角色数据是否存在</li>
+                        <li>网络连接是否正常</li>
+                    </ul>
+                `;
+            }
+        }
+
+        // 下载测试导出文件
+        function downloadTestExport() {
+            if (!testExportBlob) {
+                alert('没有可下载的导出文件');
+                return;
+            }
+            
+            const url = URL.createObjectURL(testExportBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${selectedCharacter}_test_export.png`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 测试文件导入
+        async function testFileImport() {
+            const fileInput = document.getElementById('importFileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                return;
+            }
+            
+            const resultDiv = document.getElementById('importResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<p>正在测试文件导入...</p>';
+            
+            try {
+                // 使用导入器的方法
+                const importer = new CharacterImporter();
+                const extractedData = await importer.extractCharacterFromImage(file);
+                
+                if (extractedData) {
+                    resultDiv.className = 'test-result success';
+                    resultDiv.innerHTML = `
+                        <h4>✅ 文件导入测试成功</h4>
+                        <p><strong>文件名:</strong> ${file.name}</p>
+                        <p><strong>文件大小:</strong> ${(file.size / 1024).toFixed(2)} KB</p>
+                        <p><strong>角色名称:</strong> ${extractedData.名字 || extractedData.name}</p>
+                        <p><strong>角色类型:</strong> ${extractedData.category || extractedData.角色类别}</p>
+                        <p><strong>包含数据书:</strong> ${extractedData.has_storybook ? '是' : '否'}</p>
+                        <details>
+                            <summary>提取的完整数据</summary>
+                            <pre>${JSON.stringify(extractedData, null, 2)}</pre>
+                        </details>
+                    `;
+                } else {
+                    throw new Error('无法从图片中提取角色数据');
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `
+                    <h4>❌ 文件导入测试失败</h4>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+
+        // 页面加载时自动执行第一步
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLoginStatus();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+{# ============================================================
+   partials/confirm_modal.html
+   ------------------------------------------------------------
+   通用确认弹窗骨架。
+
+   参数：
+     - id: 弹窗 id（必传）
+     - title: 标题
+     - body_id: 内容文案 id（可选）
+     - confirm_text: 确认按钮文字
+     - cancel_text: 取消按钮文字
+     - on_confirm: 确认按钮 onclick（必传）
+     - on_cancel: 取消按钮 onclick
+     - confirm_kind: primary | danger
+   ============================================================ #}
+<div id="{{ id }}" class="modal2">
+    <div class="modal2__container modal2__container--sm">
+        <div class="modal2__header">
+            <h2 class="modal2__title">{{ title|default('请确认') }}</h2>
+        </div>
+        <div class="modal2__body">
+            {% if body_id %}
+            <p id="{{ body_id }}"></p>
+            {% else %}
+            <p>{{ body_text|default('确定执行此操作吗？') }}</p>
+            {% endif %}
+            {% if warning_text %}
+            <p class="u-text-danger">{{ warning_text }}</p>
+            {% endif %}
+        </div>
+        <div class="modal2__footer">
+            <div class="modal2__footer-actions">
+                <button type="button" class="btn btn--secondary" onclick="{{ on_cancel|default('this.closest(\'.modal2\').classList.remove(\'is-open\')') }}">{{ cancel_text|default('取消') }}</button>
+                <button type="button" class="btn btn--{{ confirm_kind|default('danger') }}" onclick="{{ on_confirm }}">{{ confirm_text|default('确认') }}</button>
+            </div>
+        </div>
+    </div>
+</div>

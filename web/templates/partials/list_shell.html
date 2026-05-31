@@ -1,0 +1,16 @@
+{# ============================================================
+   partials/list_shell.html
+   ------------------------------------------------------------
+   通用列表壳：标准 padding/边框/背景 + 内嵌 loading/empty 槽位。
+
+   用法 (with caller / using {% include %} 都可)：
+     {% include 'partials/list_shell.html' %}
+
+   参数：
+     - container_id: 容器 id（必传）
+     - is_grid: 网格布局 True/False
+     - flush: 取消默认背景，让业务自定义
+   ============================================================ #}
+<div class="list-shell{% if flush %} list-shell--flush{% endif %}">
+    <div id="{{ container_id }}" class="{% if is_grid %}list-shell__grid{% else %}list-shell__list{% endif %}"></div>
+</div>

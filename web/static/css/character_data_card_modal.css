@@ -1,0 +1,274 @@
+/* 角色数据卡模态框样式 */
+.character-data-card-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease;
+}
+
+.character-data-card-modal.show {
+    display: flex;
+}
+
+.character-data-card-content {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 20px;
+    padding: 0;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    border: 2px solid #4a5568;
+    animation: slideInUp 0.3s ease;
+}
+
+.character-data-card-header {
+    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+    padding: 20px 25px;
+    border-bottom: 2px solid #4a5568;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.character-data-card-title {
+    color: #e2e8f0;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.character-avatar-small {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #4a5568;
+    object-fit: cover;
+}
+
+.character-data-card-close {
+    background: none;
+    border: none;
+    color: #e2e8f0;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.character-data-card-close:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fed7d7;
+}
+
+.character-data-card-body {
+    padding: 25px;
+    max-height: 60vh;
+    overflow-y: auto;
+    color: #e2e8f0;
+}
+
+.character-data-card-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.character-data-card-body::-webkit-scrollbar-track {
+    background: #2d3748;
+    border-radius: 4px;
+}
+
+.character-data-card-body::-webkit-scrollbar-thumb {
+    background: #4a5568;
+    border-radius: 4px;
+}
+
+.character-data-card-body::-webkit-scrollbar-thumb:hover {
+    background: #718096;
+}
+
+/* 数据卡内容样式 */
+.data-card-section {
+    background: rgba(45, 55, 72, 0.5);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #4a5568;
+    overflow: hidden;
+}
+
+.data-card-section-header {
+    background: rgba(26, 32, 44, 0.8);
+    padding: 15px 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.data-card-section-header:hover {
+    background: rgba(26, 32, 44, 1);
+}
+
+.data-card-section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin: 0;
+}
+
+.data-card-section-arrow {
+    color: #a0aec0;
+    transition: transform 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.data-card-section-arrow.expanded {
+    transform: rotate(90deg);
+}
+
+.data-card-section-content {
+    padding: 0 20px;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.data-card-section-content.expanded {
+    padding: 20px;
+    max-height: 500px;
+}
+
+.data-card-attribute {
+    margin-bottom: 15px;
+    padding: 12px;
+    background: rgba(74, 85, 104, 0.3);
+    border-radius: 8px;
+    border-left: 4px solid #4299e1;
+}
+
+.data-card-attribute-name {
+    font-weight: 600;
+    color: #90cdf4;
+    margin-bottom: 5px;
+    font-size: 0.95rem;
+}
+
+.data-card-attribute-value {
+    color: #e2e8f0;
+    line-height: 1.5;
+    word-wrap: break-word;
+}
+
+.data-card-attribute-value ul {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+.data-card-attribute-value li {
+    margin-bottom: 5px;
+}
+
+/* 创建数据书提示样式 */
+.create-storybook-prompt {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.create-storybook-icon {
+    font-size: 4rem;
+    color: #4a5568;
+    margin-bottom: 20px;
+}
+
+.create-storybook-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 15px;
+}
+
+.create-storybook-description {
+    color: #a0aec0;
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+.create-storybook-button {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: 2px solid #28a745;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.create-storybook-button:hover {
+    background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+    border-color: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .character-data-card-content {
+        width: 95%;
+        max-height: 95vh;
+    }
+    
+    .character-data-card-header {
+        padding: 15px 20px;
+    }
+    
+    .character-data-card-title {
+        font-size: 1.3rem;
+    }
+    
+    .character-data-card-body {
+        padding: 20px;
+        max-height: 70vh;
+    }
+    
+    .data-card-section-content.expanded {
+        max-height: 300px;
+    }
+}

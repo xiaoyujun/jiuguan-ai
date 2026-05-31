@@ -1,0 +1,307 @@
+{
+  "data_directory": "数据书",
+  
+  "feature_maps": {
+    "gender": {
+      "female_keywords": {
+        "女生": 2.0,
+        "女孩": 2.0,
+        "女性": 2.0,
+        "少女": 2.0,
+        "女人": 2.0,
+        "她": 1.5,
+        "姐姐": 1.5,
+        "妹妹": 1.5,
+        "女士": 1.5,
+        "female": 2.0,
+        "girl": 2.0,
+        "woman": 2.0,
+        "lady": 1.5
+      },
+      "male_keywords": {
+        "男生": -1.5,
+        "男孩": -1.5,
+        "男性": -1.5,
+        "少年": -1.0,
+        "男人": -1.5,
+        "他": -0.8,
+        "哥哥": -1.0,
+        "弟弟": -1.0,
+        "先生": -1.0,
+        "male": -1.5,
+        "boy": -1.5,
+        "man": -1.5,
+        "guy": -1.0
+      }
+    },
+    
+    "sports": {
+      "running_keywords": {
+        "跑步": 3.0,
+        "跑": 2.0,
+        "跑者": 2.5,
+        "长跑": 2.5,
+        "短跑": 2.5,
+        "慢跑": 2.0,
+        "晨跑": 2.0,
+        "夜跑": 2.0,
+        "running": 3.0,
+        "run": 2.0,
+        "runner": 2.5,
+        "jog": 2.0,
+        "jogging": 2.0
+      },
+      "athletics_keywords": {
+        "田径": 2.5,
+        "田径队": 2.0,
+        "田径社": 2.0,
+        "运动员": 2.0,
+        "track": 2.0,
+        "athletics": 2.0,
+        "athlete": 2.0
+      },
+      "general_sports_keywords": {
+        "运动": 1.5,
+        "体育": 1.5,
+        "健身": 1.5,
+        "锻炼": 1.5,
+        "活力": 1.2,
+        "健康": 1.0,
+        "体力": 1.2,
+        "sport": 1.5,
+        "exercise": 1.5,
+        "fitness": 1.5,
+        "active": 1.2
+      }
+    },
+    
+    "personality": {
+      "positive_traits": {
+        "阳光": 1.5,
+        "开朗": 1.5,
+        "活泼": 1.5,
+        "乐观": 1.5,
+        "坚韧": 1.2,
+        "坚强": 1.2,
+        "努力": 1.2,
+        "勤奋": 1.2,
+        "团队": 1.0,
+        "合作": 1.0,
+        "友好": 1.0,
+        "cheerful": 1.5,
+        "optimistic": 1.5,
+        "energetic": 1.5,
+        "strong": 1.2,
+        "hardworking": 1.2,
+        "team": 1.0
+      },
+      "negative_traits": {
+        "冷漠": -1.2,
+        "自私": -1.0,
+        "暴躁": -1.0,
+        "悲观": -0.8,
+        "懒惰": -1.0,
+        "傲慢": -1.0,
+        "胆小": -0.8,
+        "孤僻": -0.8,
+        "cold": -1.2,
+        "selfish": -1.0,
+        "pessimistic": -0.8,
+        "arrogant": -1.0,
+        "lazy": -1.0
+      }
+    },
+    
+    "occupation": {
+      "student_keywords": {
+        "学生": 2.5,
+        "学院": 2.0,
+        "大学": 2.0,
+        "毕业": 1.8,
+        "课程": 1.5,
+        "考核": 1.5,
+        "学分": 1.8,
+        "student": 2.5,
+        "university": 2.0,
+        "college": 2.0,
+        "graduation": 1.8,
+        "academic": 1.5
+      },
+      "artist_keywords": {
+        "艺术": 2.5,
+        "艺术家": 3.0,
+        "绘画": 2.0,
+        "创作": 2.0,
+        "作品": 1.8,
+        "素描": 1.5,
+        "画家": 2.5,
+        "artist": 3.0,
+        "art": 2.5,
+        "creative": 2.0,
+        "painting": 2.0,
+        "sketch": 1.5
+      },
+      "adventurer_keywords": {
+        "冒险者": 3.0,
+        "冒险": 2.5,
+        "探险": 2.0,
+        "公会": 2.0,
+        "任务": 1.8,
+        "委托": 1.5,
+        "adventurer": 3.0,
+        "adventure": 2.5,
+        "quest": 1.8,
+        "guild": 2.0,
+        "mission": 1.5
+      }
+    },
+    
+    "race": {
+      "human_keywords": {
+        "人类": 2.0,
+        "人": 1.5,
+        "凡人": 1.2,
+        "human": 2.0,
+        "mortal": 1.2
+      },
+      "elf_keywords": {
+        "精灵": 3.0,
+        "长耳": 2.5,
+        "尖耳": 2.0,
+        "elf": 3.0,
+        "elven": 2.5,
+        "pointed ears": 2.0
+      },
+      "dark_elf_keywords": {
+        "黑暗精灵": 3.5,
+        "黑精灵": 3.0,
+        "深色皮肤": 2.0,
+        "dark elf": 3.5,
+        "drow": 3.0,
+        "dark skin": 2.0
+      }
+    }
+  },
+  
+  "gender_detection": {
+    "female_indicators": ["她", "女", "girl", "woman", "female", "姐", "妹", "小姐", "lady"],
+    "male_indicators": ["他", "男", "boy", "man", "male", "哥", "弟", "先生", "guy"]
+  },
+  
+  "sports_detection": {
+    "summary_keywords": ["田径", "运动", "健将", "力量", "athletic", "sports", "runner", "fitness"],
+    "tag_keywords": ["田径", "运动", "健将", "力量", "athletic", "sports", "runner", "fitness"],
+    "description_indicators": ["田径", "跑步", "运动", "锻炼", "健身", "体育", "比赛", "训练"],
+    "professional_words": ["田径健将", "运动员", "体育", "健将"]
+  },
+  
+  "fuzzy_config": {
+    "min_score": 60,
+    "max_results": 10,
+    "boost_exact": 1.5,
+    "boost_partial": 1.2,
+    "name_search_min_score": 30
+  },
+  
+  "search_weights": {
+    "feature_score_weight": 0.6,
+    "fuzzy_score_weight": 0.3,
+    "precision_bonus_weight": 0.1,
+    "gender_match_boost": 1.5,
+    "gender_mismatch_penalty": 0.5,
+    "sports_match_boost": 2.0,
+    "sports_no_match_penalty": 0.3
+  },
+  
+  "fuzzy_weights": {
+    "name_weight": 2.0,
+    "summary_weight": 1.5,
+    "tags_weight": 1.2,
+    "description_weight": 1.0,
+    "max_score_ratio": 0.6,
+    "avg_score_ratio": 0.4
+  },
+  
+  "precision_bonus": {
+    "high_value_words": ["跑步", "田径", "运动", "女生", "女性", "艺术家", "冒险者"],
+    "high_value_bonus": 0.2,
+    "medium_value_words": ["喜欢", "阳光", "开朗", "活力", "学生", "成熟", "朋友"],
+    "medium_value_bonus": 0.1,
+    "default_bonus": 0.05,
+    "special_combination_bonus": 0.5,
+    "gender_only_bonus": 0.2,
+    "professional_sports_bonus": 0.3
+  },
+  
+  "text_processing": {
+    "min_word_length": 1,
+    "max_description_length": 100,
+    "max_description_sentences": 3,
+    "min_sentence_length": 10
+  },
+
+  "relevance_thresholds": {
+    "high_relevance": 0.7,
+    "medium_relevance": 0.4,
+    "low_relevance": 0.1
+  },
+
+  "return_fields": {
+    "high_relevance": "complete",
+    "medium_relevance": {
+      "include_fields": ["总结词", "关键词", "属性.状态", "属性.外貌特征", "标签", "描述"]
+    },
+    "low_relevance": {
+      "include_fields": ["属性.状态.名称", "属性.外貌特征", "总结词"]
+    }
+  },
+
+  "role_context_config": {
+    "player_binding_boost": 1.5,
+    "role_relationship_boost": 1.3,
+    "mention_boost": 1.2,
+    "enable_context_logging": true,
+    "min_context_threshold": 0.05
+  },
+
+  "chat_analysis": {
+    "min_relevance_threshold": 0.05,
+    "direct_mention_score": 0.8,
+    "max_context_characters": 8,
+    "enable_role_context": true,
+    "role_context_weights": {
+      "player_bound_character": 1.5,
+      "related_character": 1.3,
+      "mentioned_character": 1.2,
+      "multi_chat_bound_character": 2.0,
+      "multi_chat_participant": 1.8
+    },
+    "multi_chat_mode": {
+      "enable_enhanced_binding": true,
+      "binding_boost_multiplier": 1.5,
+      "participant_boost": 1.3,
+      "cross_reference_boost": 1.2
+    }
+  },
+
+  "dynamic_compression": {
+    "max_storybooks": 15,
+    "full_display_count": 4,
+    "compression_levels": {
+      "full": "complete",
+      "medium": {
+        "include_fields": ["总结词", "关键词", "属性.状态", "属性.外貌特征", "标签", "属性.状态.描述"]
+      },
+      "high": {
+        "include_fields": ["属性.状态.名称", "属性.外貌特征", "属性.状态.描述", "属性.背包", "属性.事件"]
+      },
+      "extreme": {
+        "include_fields": ["属性.状态.名称", "属性.外貌特征"]
+      }
+    },
+    "size_thresholds": {
+      "large_dataset": 50000,
+      "medium_dataset": 20000
+    }
+  }
+}

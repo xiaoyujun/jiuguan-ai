@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>底层设定管理 - 开发者专用</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hidden_settings.css') }}">
+    <style>
+        .dev-warning {
+            background: #ff6b6b;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .trigger-mode-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .trigger-mode-option {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .trigger-mode-option.selected {
+            border-color: #007bff;
+            background: #e3f2fd;
+        }
+        
+        .trigger-mode-description {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .content-editor {
+            min-height: 120px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .priority-input {
+            width: 80px;
+        }
+        
+        .settings-stats {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+        
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .test-panel {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .test-input {
+            width: 100%;
+            min-height: 80px;
+            margin-bottom: 10px;
+        }
+        
+        .test-result {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 3px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="dev-warning">
+                ⚠️ 开发者专用功能 - 底层设定对用户不可见，仅在AI处理时生效
+            </div>
+            
+            <h1>底层设定管理</h1>
+            <p class="subtitle">管理基于关键词触发的隐藏设定，用于影响AI行为</p>
+            
+            <!-- 统计信息 -->
+            <div class="settings-stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="total-settings">0</span>
+                    <span class="stat-label">总设定数</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="enabled-settings">0</span>
+                    <span class="stat-label">已启用</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="categories-count">0</span>
+                    <span class="stat-label">分类数</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="keyword-settings">0</span>
+                    <span class="stat-label">关键词触发</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 控制面板 -->
+        <div class="controls">
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="搜索设定名称、描述或关键词..." class="search-input">
+                <select id="category-filter" class="category-filter">
+                    <option value="">所有分类</option>
+                </select>
+            </div>
+            
+            <div class="action-buttons">
+                <button id="add-setting-btn" class="btn btn-primary">
+                    <i class="icon-plus"></i> 新增设定
+                </button>
+                <button id="test-matching-btn" class="btn btn-secondary">
+                    <i class="icon-test"></i> 测试匹配
+                </button>
+                <button id="refresh-btn" class="btn btn-secondary">
+                    <i class="icon-refresh"></i> 刷新
+                </button>
+            </div>
+        </div>
+        
+        <!-- 设定列表 -->
+        <div class="entries-container">
+            <div id="entries-grid" class="entries-grid">
+                <!-- 设定条目将在这里动态加载 -->
+            </div>
+        </div>
+        
+        <!-- 测试面板 -->
+        <div id="test-panel" class="test-panel" style="display: none;">
+            <h3>关键词匹配测试</h3>
+            <textarea id="test-text" class="test-input" placeholder="输入文本以测试关键词匹配..."></textarea>
+            <button id="run-test-btn" class="btn btn-primary">运行测试</button>
+            <div id="test-result" class="test-result" style="display: none;"></div>
+        </div>
+    </div>
+    
+    <!-- 设定编辑模态框 -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">新增底层设定</h3>
+                <span class="close" id="close-modal">&times;</span>
+            </div>
+            
+            <div class="modal-body">
+                <form id="setting-form">
+                    <div class="form-group">
+                        <label for="setting-name">设定名称 *</label>
+                        <input type="text" id="setting-name" name="name" required class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="setting-description">设定描述 *</label>
+                        <input type="text" id="setting-description" name="description" required class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="setting-content">设定内容 *</label>
+                        <textarea id="setting-content" name="content" required class="form-control content-editor" 
+                                  placeholder="将注入给AI的具体内容..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>触发模式</label>
+                        <div class="trigger-mode-selector">
+                            <div class="trigger-mode-option" data-mode="keyword">
+                                <div>关键词触发</div>
+                                <div class="trigger-mode-description">当文本包含关键词时触发</div>
+                            </div>
+                            <div class="trigger-mode-option" data-mode="always">
+                                <div>始终生效</div>
+                                <div class="trigger-mode-description">无论什么情况都会生效</div>
+                            </div>
+                            <div class="trigger-mode-option" data-mode="conditional">
+                                <div>条件触发</div>
+                                <div class="trigger-mode-description">根据特定条件触发（预留）</div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="trigger-mode" name="trigger_mode" value="keyword">
+                    </div>
+                    
+                    <div class="form-group" id="keywords-group">
+                        <label for="setting-keywords">触发关键词</label>
+                        <input type="text" id="setting-keywords" name="keywords" class="form-control" 
+                               placeholder="多个关键词用逗号分隔...">
+                        <small class="form-text">关键词触发模式下必需</small>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="setting-category">分类</label>
+                            <input type="text" id="setting-category" name="category" class="form-control" value="系统">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="setting-priority">优先级</label>
+                            <input type="number" id="setting-priority" name="priority" class="form-control priority-input" 
+                                   value="1" min="1" max="100">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="setting-enabled" name="enabled" checked>
+                            启用此设定
+                        </label>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" id="cancel-btn" class="btn btn-secondary">取消</button>
+                <button type="button" id="save-btn" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 加载指示器 -->
+    <div id="loading" class="loading" style="display: none;">
+        <div class="spinner"></div>
+        <p>加载中...</p>
+    </div>
+    
+    <!-- 消息提示 -->
+    <div id="message" class="message" style="display: none;"></div>
+    
+    <script src="{{ url_for('static', filename='js/hidden_settings.js') }}"></script>
+</body>
+</html>

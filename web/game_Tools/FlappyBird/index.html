@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>像素鸟飞行 · FlappyBird</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="game-background">
+        <div class="cloud cloud-1"></div>
+        <div class="cloud cloud-2"></div>
+        <div class="cloud cloud-3"></div>
+    </div>
+    
+    <main class="game-container" role="main">
+        <header class="game-header">
+            <h1 class="game-title">
+                <span class="title-main">像素鸟飞行</span>
+                <span class="title-sub">FlappyBird · 经典重现</span>
+            </h1>
+            <button class="close-btn" onclick="closeGame()" aria-label="关闭游戏">
+                <span class="close-icon">✕</span>
+            </button>
+        </header>
+        
+        <section class="game-arena" aria-labelledby="game-title">
+            <canvas id="gameCanvas" width="400" height="600" role="img" aria-label="FlappyBird游戏画面">
+                您的浏览器不支持Canvas，请升级浏览器
+            </canvas>
+            
+            <div class="game-overlay">
+                <div class="start-screen" id="startScreen">
+                    <div class="start-content">
+                        <div class="pixel-bird"></div>
+                        <h2 class="start-title">像素鸟飞行</h2>
+                        <p class="start-instruction">点击屏幕或按空格键让小鸟飞翔</p>
+                        <button class="start-btn pixel-btn" id="startBtn">开始游戏</button>
+                    </div>
+                </div>
+                
+                <div class="game-over-screen" id="gameOverScreen" style="display: none;">
+                    <div class="game-over-content">
+                        <h2 class="game-over-title">游戏结束</h2>
+                        <div class="score-display">
+                            <div class="score-item">
+                                <span class="score-label">得分:</span>
+                                <span class="score-value" id="finalScore">0</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">最高分:</span>
+                                <span class="score-value" id="bestScore">0</span>
+                            </div>
+                        </div>
+                        <div class="game-over-buttons">
+                            <button class="restart-btn pixel-btn" id="restartBtn">重新开始</button>
+                            <button class="send-score-btn pixel-btn" id="sendScoreBtn">发送分数</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="pause-screen" id="pauseScreen" style="display: none;">
+                    <div class="pause-content">
+                        <h2 class="pause-title">游戏暂停</h2>
+                        <button class="resume-btn pixel-btn" id="resumeBtn">继续游戏</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="game-stats" aria-labelledby="stats-title">
+            <h2 id="stats-title" class="sr-only">游戏统计</h2>
+            <div class="stats-row">
+                <div class="stat-item">
+                    <span class="stat-label">当前分数</span>
+                    <span class="stat-value" id="currentScore">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">最高分</span>
+                    <span class="stat-value" id="highScore">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">通过管道</span>
+                    <span class="stat-value" id="pipesCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">难度等级</span>
+                    <span class="stat-value" id="difficultyLevel">0</span>
+                </div>
+            </div>
+        </section>
+        
+        <section class="controls" aria-labelledby="controls-title">
+            <h2 id="controls-title" class="sr-only">操作控制</h2>
+            <div class="control-buttons">
+                <button class="control-btn pixel-btn" id="pauseBtn" disabled>
+                    <span class="btn-icon">⏸</span>
+                    <span class="btn-text">暂停</span>
+                </button>
+                <button class="control-btn pixel-btn" id="mutBtn">
+                    <span class="btn-icon" id="muteIcon">🔊</span>
+                    <span class="btn-text">音效</span>
+                </button>
+            </div>
+            <div class="control-instructions">
+                <p class="instruction-text">
+                    <span class="key-hint">空格键</span> 或 <span class="key-hint">点击</span> 控制飞行
+                </p>
+                <p class="instruction-text">
+                    <span class="key-hint">P键</span> 暂停游戏
+                </p>
+            </div>
+        </section>
+        
+        <section class="achievements" aria-labelledby="achievements-title">
+            <h3 id="achievements-title" class="achievements-title">
+                <span class="title-icon">🏆</span>
+                成就系统
+            </h3>
+            <div class="achievements-list" id="achievementsList">
+                <div class="achievement-item" data-achievement="first-flight">
+                    <span class="achievement-icon">🐣</span>
+                    <span class="achievement-name">初次飞行</span>
+                    <span class="achievement-desc">开始第一次游戏</span>
+                </div>
+                <div class="achievement-item" data-achievement="bronze-flyer">
+                    <span class="achievement-icon">🥉</span>
+                    <span class="achievement-name">铜牌飞手</span>
+                    <span class="achievement-desc">得分达到10分</span>
+                </div>
+                <div class="achievement-item" data-achievement="silver-flyer">
+                    <span class="achievement-icon">🥈</span>
+                    <span class="achievement-name">银牌飞手</span>
+                    <span class="achievement-desc">得分达到25分</span>
+                </div>
+                <div class="achievement-item" data-achievement="gold-flyer">
+                    <span class="achievement-icon">🥇</span>
+                    <span class="achievement-name">金牌飞手</span>
+                    <span class="achievement-desc">得分达到50分</span>
+                </div>
+                <div class="achievement-item" data-achievement="master-flyer">
+                    <span class="achievement-icon">💎</span>
+                    <span class="achievement-name">飞行大师</span>
+                    <span class="achievement-desc">得分达到100分</span>
+                </div>
+            </div>
+        </section>
+        
+        <footer class="game-lore">
+            <div class="lore-content">
+                <p class="lore-text">在这个像素世界中，每一次飞翔都是对重力的挑战</p>
+                <p class="lore-subtext">简单的操作，无尽的乐趣</p>
+            </div>
+        </footer>
+    </main>
+    
+    <script src="script.js"></script>
+</body>
+</html>
