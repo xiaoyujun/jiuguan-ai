@@ -11,9 +11,13 @@ import requests
 from flask import Blueprint, jsonify, render_template, request
 
 from web.model_config_utils import (
+    REASONING_EFFORT_CHOICES,
+    VERBOSITY_CHOICES,
     auto_generate_model_key,
     ensure_chat_model_structure,
     infer_provider_name,
+    parse_optional_choice,
+    parse_optional_extra_body,
     parse_optional_number,
     resolve_all_models,
     resolve_model_config,
@@ -104,7 +108,24 @@ def _get_model_payload(data: Dict[str, Any], models: Dict[str, Any], model_key: 
         "top_p": parse_optional_number(data.get("top_p")),
         "presence_penalty": parse_optional_number(data.get("presence_penalty")),
         "frequency_penalty": parse_optional_number(data.get("frequency_penalty")),
+        "reasoning_effort": parse_optional_choice(
+            data.get("reasoning_effort"), REASONING_EFFORT_CHOICES
+        ),
+        "verbosity": parse_optional_choice(data.get("verbosity"), VERBOSITY_CHOICES),
+        "thinking_budget": parse_optional_number(
+            data.get("thinking_budget"), as_int=True
+        ),
+        "extra_body": parse_optional_extra_body(data.get("extra_body")),
     }
+
+    # extra_body 字段允许接收原始字符串；如果用户填了非 JSON，提示而不是静默丢弃
+    raw_extra = data.get("extra_body")
+    if (
+        raw_extra not in (None, "")
+        and not isinstance(raw_extra, dict)
+        and optional_fields["extra_body"] is None
+    ):
+        raise ValueError("额外参数（extra_body）必须是合法的 JSON 对象")
 
     for field, value in optional_fields.items():
         if value is not None:
@@ -172,6 +193,10 @@ def _build_completion_kwargs(model_data: Dict[str, Any], *, stream: bool = False
     top_p = model_data.get("top_p")
     presence_penalty = model_data.get("presence_penalty")
     frequency_penalty = model_data.get("frequency_penalty")
+    reasoning_effort = model_data.get("reasoning_effort")
+    verbosity = model_data.get("verbosity")
+    thinking_budget = model_data.get("thinking_budget")
+    extra_body_user = model_data.get("extra_body")
 
     if temperature is not None:
         request_kwargs["temperature"] = temperature
@@ -185,6 +210,18 @@ def _build_completion_kwargs(model_data: Dict[str, Any], *, stream: bool = False
         request_kwargs["presence_penalty"] = presence_penalty
     if frequency_penalty is not None:
         request_kwargs["frequency_penalty"] = frequency_penalty
+    if reasoning_effort:
+        request_kwargs["reasoning_effort"] = reasoning_effort
+    if verbosity:
+        request_kwargs["verbosity"] = verbosity
+
+    extra_body: Dict[str, Any] = {}
+    if isinstance(extra_body_user, dict) and extra_body_user:
+        extra_body.update(extra_body_user)
+    if thinking_budget is not None and "thinking_budget" not in extra_body:
+        extra_body["thinking_budget"] = thinking_budget
+    if extra_body:
+        request_kwargs["extra_body"] = extra_body
 
     return request_kwargs
 
@@ -628,6 +665,14 @@ def test_model():
             "top_p": parse_optional_number(data.get("top_p")),
             "presence_penalty": parse_optional_number(data.get("presence_penalty")),
             "frequency_penalty": parse_optional_number(data.get("frequency_penalty")),
+            "reasoning_effort": parse_optional_choice(
+                data.get("reasoning_effort"), REASONING_EFFORT_CHOICES
+            ),
+            "verbosity": parse_optional_choice(data.get("verbosity"), VERBOSITY_CHOICES),
+            "thinking_budget": parse_optional_number(
+                data.get("thinking_budget"), as_int=True
+            ),
+            "extra_body": parse_optional_extra_body(data.get("extra_body")),
             "stream": bool(data.get("stream", True)),
         }
 

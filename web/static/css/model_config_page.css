@@ -808,6 +808,31 @@ select.mc-input {
     gap: 14px;
 }
 
+.mc-advanced__section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    padding: 6px 0 4px;
+    border-top: 1px dashed rgba(184, 134, 11, 0.25);
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 0.8px;
+    color: var(--text-gold);
+    text-transform: uppercase;
+}
+
+.mc-advanced__section-title i {
+    font-size: 11px;
+    color: var(--text-gold);
+}
+
+.mc-tag--reason {
+    background: linear-gradient(135deg, rgba(184, 134, 11, 0.16), rgba(184, 134, 11, 0.04));
+    border: 1px solid rgba(184, 134, 11, 0.45);
+    color: var(--text-gold);
+}
+
 .hidden {
     display: none !important;
 }

@@ -58,6 +58,41 @@ def parse_optional_number(value: Any, *, as_int: bool = False) -> int | float | 
         return None
 
 
+# 推理强度可选值。`auto` 表示交给上游默认行为，不下发该字段。
+REASONING_EFFORT_CHOICES = ("minimal", "low", "medium", "high")
+VERBOSITY_CHOICES = ("low", "medium", "high")
+
+
+def parse_optional_choice(value: Any, choices: tuple) -> str | None:
+    """将可选枚举字段规范化；空值或非法值返回 None。"""
+    if value in (None, ""):
+        return None
+    text = str(value).strip().lower()
+    if text in ("auto", "default"):
+        return None
+    return text if text in choices else None
+
+
+def parse_optional_extra_body(value: Any) -> Dict[str, Any] | None:
+    """将“额外参数”字段规范化为 dict；空字符串/非法 JSON 返回 None。"""
+    if value in (None, ""):
+        return None
+    if isinstance(value, dict):
+        return value if value else None
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return None
+        try:
+            import json as _json
+
+            parsed = _json.loads(text)
+        except (TypeError, ValueError):
+            return None
+        return parsed if isinstance(parsed, dict) and parsed else None
+    return None
+
+
 def _build_provider_fingerprint(base_url: str, api_key: str) -> Tuple[str, str]:
     return (base_url.strip(), api_key.strip())
 
@@ -206,6 +241,16 @@ def resolve_model_config(config: Dict[str, Any], model_key: str | None) -> Dict[
     presence_penalty = parse_optional_number(model_config.get("presence_penalty"))
     frequency_penalty = parse_optional_number(model_config.get("frequency_penalty"))
 
+    # 新一代模型推理参数
+    reasoning_effort = parse_optional_choice(
+        model_config.get("reasoning_effort"), REASONING_EFFORT_CHOICES
+    )
+    verbosity = parse_optional_choice(model_config.get("verbosity"), VERBOSITY_CHOICES)
+    thinking_budget = parse_optional_number(
+        model_config.get("thinking_budget"), as_int=True
+    )
+    extra_body = parse_optional_extra_body(model_config.get("extra_body"))
+
     stream_value = model_config.get("stream")
     if stream_value is None:
         stream_value = True
@@ -225,6 +270,10 @@ def resolve_model_config(config: Dict[str, Any], model_key: str | None) -> Dict[
         "top_p": top_p,
         "presence_penalty": presence_penalty,
         "frequency_penalty": frequency_penalty,
+        "reasoning_effort": reasoning_effort,
+        "verbosity": verbosity,
+        "thinking_budget": thinking_budget,
+        "extra_body": extra_body,
         "stream": bool(stream_value),
         "effective_context_window": context_window or max_tokens or DEFAULT_CONTEXT_WINDOW,
         "uses_advanced_settings": any(
@@ -236,6 +285,10 @@ def resolve_model_config(config: Dict[str, Any], model_key: str | None) -> Dict[
                 top_p,
                 presence_penalty,
                 frequency_penalty,
+                reasoning_effort,
+                verbosity,
+                thinking_budget,
+                extra_body,
             )
         ),
     }

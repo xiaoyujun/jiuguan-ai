@@ -65,17 +65,36 @@ def _build_completion_kwargs(
     if stream:
         kwargs["stream_options"] = {"include_usage": True}
 
+    # 经典 Chat Completions 字段：直接作为顶层参数下发
     optional_fields = [
         "temperature",
         "max_tokens",
         "top_p",
         "presence_penalty",
         "frequency_penalty",
+        # 新一代模型显式参数（OpenAI o-series / gpt-5 等）
+        "reasoning_effort",
+        "verbosity",
     ]
     for field in optional_fields:
         value = model_config.get(field)
         if value is not None:
             kwargs[field] = value
+
+    # 把 thinking_budget 透传到 extra_body，便于兼容 Gemini / Claude / 通义等不同方言
+    extra_body: Dict = {}
+    user_extra = model_config.get("extra_body")
+    if isinstance(user_extra, dict) and user_extra:
+        # 浅拷贝，避免污染配置
+        extra_body.update(user_extra)
+
+    thinking_budget = model_config.get("thinking_budget")
+    if thinking_budget is not None and "thinking_budget" not in extra_body:
+        # Gemini 风格 thinkingConfig.thinkingBudget；同时附带常见别名以提升兼容性
+        extra_body["thinking_budget"] = thinking_budget
+
+    if extra_body:
+        kwargs["extra_body"] = extra_body
 
     return kwargs
 
@@ -171,8 +190,10 @@ def get_model_for_function(function_name: str):
 
 def _stream_response_content(response, model: str) -> Generator[str, None, None]:
     response_content = ""
+    reasoning_content = ""
     chunk_count = 0
     usage_info = None
+    reasoning_started = False
 
     print("\n🔄 开始接收流式响应:")
     print("-" * 60)
@@ -188,8 +209,50 @@ def _stream_response_content(response, model: str) -> Generator[str, None, None]
             continue
 
         choice = chunk.choices[0]
-        if hasattr(choice, "delta") and choice.delta and getattr(choice.delta, "content", None):
-            content = choice.delta.content
+        delta = getattr(choice, "delta", None)
+        if delta is None:
+            continue
+
+        # 优先抽取“思考过程”片段，仅在控制台打印，不下发给前端
+        # 兼容 DeepSeek-R1 / Qwen-R 系列（reasoning_content）
+        # 与 OpenAI o-series / gpt-5 SDK（reasoning.content）等多种方言
+        reasoning_piece = getattr(delta, "reasoning_content", None)
+        if reasoning_piece is None:
+            reasoning_obj = getattr(delta, "reasoning", None)
+            if reasoning_obj is not None:
+                reasoning_piece = getattr(reasoning_obj, "content", None) or getattr(
+                    reasoning_obj, "summary", None
+                )
+        # 部分服务商通过 dict-like model_extra 暴露字段
+        if reasoning_piece is None:
+            try:
+                extra = getattr(delta, "model_extra", None) or {}
+                reasoning_piece = (
+                    extra.get("reasoning_content")
+                    or extra.get("thinking")
+                    or (extra.get("reasoning") or {}).get("content")
+                    if isinstance(extra, dict)
+                    else None
+                )
+            except Exception:
+                reasoning_piece = None
+
+        if reasoning_piece:
+            reasoning_content += reasoning_piece
+            if not reasoning_started:
+                print("\n🧠 思考过程:")
+                print("-" * 60)
+                reasoning_started = True
+            print(reasoning_piece, end="", flush=True)
+
+        if getattr(delta, "content", None):
+            if reasoning_started:
+                print("\n" + "-" * 60)
+                print("💬 正式回复:")
+                print("-" * 60)
+                reasoning_started = False  # 避免重复打印分隔线
+
+            content = delta.content
             response_content += content
 
             if model.startswith("gemini") and len(content) > 50:
@@ -215,6 +278,8 @@ def _stream_response_content(response, model: str) -> Generator[str, None, None]
 
     print("\n" + "-" * 60)
     print(f"✅ 响应完成 - 总长度: {len(response_content)} 字符，共处理 {chunk_count} 个 chunk")
+    if reasoning_content:
+        print(f"🧠 思考过程总长度: {len(reasoning_content)} 字符")
 
     if usage_info is not None:
         try:
@@ -279,6 +344,14 @@ def stream_chat_response_with_config(user_prompt: str, system_prompt: str, model
         print(f"   • 最大输出Token: {model_config.get('max_tokens', '自动')}")
         print(f"   • 上下文预算: {model_config.get('effective_context_window', '自动')}")
         print(f"   • 流式模式: {model_config.get('stream', True)}")
+        if model_config.get("reasoning_effort"):
+            print(f"   • 推理强度: {model_config.get('reasoning_effort')}")
+        if model_config.get("verbosity"):
+            print(f"   • 冗长度: {model_config.get('verbosity')}")
+        if model_config.get("thinking_budget") is not None:
+            print(f"   • 思考预算: {model_config.get('thinking_budget')}")
+        if model_config.get("extra_body"):
+            print(f"   • 额外参数: {model_config.get('extra_body')}")
         print(f"   • API地址: {base_url}")
         print("=" * 80)
 
@@ -365,6 +438,14 @@ def stream_chat_response(user_prompt: str, system_prompt: str, model_key: str = 
         print(f"   • 最大输出Token: {config.get('max_tokens', '自动')}")
         print(f"   • 上下文预算: {config.get('effective_context_window', '自动')}")
         print(f"   • 流式模式: {config.get('stream', True)}")
+        if config.get("reasoning_effort"):
+            print(f"   • 推理强度: {config.get('reasoning_effort')}")
+        if config.get("verbosity"):
+            print(f"   • 冗长度: {config.get('verbosity')}")
+        if config.get("thinking_budget") is not None:
+            print(f"   • 思考预算: {config.get('thinking_budget')}")
+        if config.get("extra_body"):
+            print(f"   • 额外参数: {config.get('extra_body')}")
         print(f"   • API地址: {base_url}")
         print("=" * 80)
 

@@ -191,6 +191,18 @@
         if (model.context_window !== null && model.context_window !== undefined) {
             tags.push(`<span class="mc-tag">ctx ${model.context_window}</span>`);
         }
+        if (model.reasoning_effort) {
+            tags.push(`<span class="mc-tag mc-tag--reason">推理 ${escapeHtml(model.reasoning_effort)}</span>`);
+        }
+        if (model.verbosity) {
+            tags.push(`<span class="mc-tag">冗长 ${escapeHtml(model.verbosity)}</span>`);
+        }
+        if (model.thinking_budget !== null && model.thinking_budget !== undefined) {
+            tags.push(`<span class="mc-tag">思考 ${model.thinking_budget}</span>`);
+        }
+        if (model.extra_body) {
+            tags.push(`<span class="mc-tag mc-tag--reason" title="自定义额外参数">extra</span>`);
+        }
 
         return `
             <div class="mc-model${isCurrent ? " is-current" : ""}">
@@ -294,9 +306,19 @@
             "top_p",
             "presence_penalty",
             "frequency_penalty",
+            "reasoning_effort",
+            "verbosity",
+            "thinking_budget",
+            "extra_body",
         ].forEach((field) => {
-            if (!payload[field]) {
+            if (payload[field] === undefined || payload[field] === null) {
+                return;
+            }
+            const value = typeof payload[field] === "string" ? payload[field].trim() : payload[field];
+            if (value === "") {
                 delete payload[field];
+            } else {
+                payload[field] = value;
             }
         });
 
@@ -420,6 +442,18 @@
             document.getElementById("modelTopP").value = model.top_p ?? "";
             document.getElementById("modelPresencePenalty").value = model.presence_penalty ?? "";
             document.getElementById("modelFrequencyPenalty").value = model.frequency_penalty ?? "";
+            document.getElementById("modelReasoningEffort").value = model.reasoning_effort ?? "";
+            document.getElementById("modelVerbosity").value = model.verbosity ?? "";
+            document.getElementById("modelThinkingBudget").value =
+                model.thinking_budget !== null && model.thinking_budget !== undefined
+                    ? model.thinking_budget
+                    : "";
+            const extraBodyEl = document.getElementById("modelExtraBody");
+            if (extraBodyEl) {
+                extraBodyEl.value = model.extra_body
+                    ? JSON.stringify(model.extra_body, null, 2)
+                    : "";
+            }
 
             if (model.uses_advanced_settings) {
                 document.getElementById("advancedFields").classList.remove("hidden");

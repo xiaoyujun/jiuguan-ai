@@ -242,6 +242,43 @@
                                 <input id="modelFrequencyPenalty" class="mc-input" name="frequency_penalty" type="number" min="-2" max="2" step="0.1" placeholder="留空自动">
                             </label>
                         </div>
+
+                        <div class="mc-advanced__section-title">
+                            <i class="fas fa-brain"></i>
+                            推理 / 思考参数（新一代模型）
+                        </div>
+                        <div class="mc-form__row mc-form__row--3">
+                            <label class="mc-field">
+                                <span>推理强度</span>
+                                <select id="modelReasoningEffort" class="mc-input" name="reasoning_effort">
+                                    <option value="">默认（不下发）</option>
+                                    <option value="minimal">minimal（极轻）</option>
+                                    <option value="low">low（低）</option>
+                                    <option value="medium">medium（中）</option>
+                                    <option value="high">high（高）</option>
+                                </select>
+                            </label>
+                            <label class="mc-field">
+                                <span>输出冗长度</span>
+                                <select id="modelVerbosity" class="mc-input" name="verbosity">
+                                    <option value="">默认（不下发）</option>
+                                    <option value="low">low（精简）</option>
+                                    <option value="medium">medium（中等）</option>
+                                    <option value="high">high（详细）</option>
+                                </select>
+                            </label>
+                            <label class="mc-field">
+                                <span>思考预算（token）</span>
+                                <input id="modelThinkingBudget" class="mc-input" name="thinking_budget" type="number" step="1" placeholder="留空 / -1 动态 / 0 关闭">
+                            </label>
+                        </div>
+                        <label class="mc-field">
+                            <span>额外参数（高级，JSON）</span>
+                            <textarea id="modelExtraBody" class="mc-input" name="extra_body" rows="3" placeholder='例如 {"safety_settings": [...], "thinking": {"type":"enabled","budget_tokens":2048}}'></textarea>
+                            <small style="color: var(--text-muted, #888); margin-top: 4px;">
+                                作为 OpenAI SDK 的 extra_body 透传给上游，可放置 reasoning / thinking / safety_settings 等任意自定义字段。
+                            </small>
+                        </label>
                     </div>
                 </div>
             </form>

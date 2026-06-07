@@ -71,6 +71,23 @@ def call_ai_model(prompt: str, function_name: str, temperature: float = None, ma
             api_config["temperature"] = final_temperature
         if final_max_tokens is not None:
             api_config["max_tokens"] = final_max_tokens
+
+        # 透传新一代模型推理参数（reasoning_effort / verbosity 等）
+        for field in ("top_p", "presence_penalty", "frequency_penalty",
+                      "reasoning_effort", "verbosity"):
+            value = model_config.get(field)
+            if value is not None:
+                api_config[field] = value
+
+        # thinking_budget + 自定义 extra_body 合并到顶层（HTTP 调用，无 SDK 的 extra_body 参数）
+        thinking_budget = model_config.get("thinking_budget")
+        user_extra = model_config.get("extra_body")
+        if isinstance(user_extra, dict) and user_extra:
+            for key, value in user_extra.items():
+                if key not in api_config:
+                    api_config[key] = value
+        if thinking_budget is not None and "thinking_budget" not in api_config:
+            api_config["thinking_budget"] = thinking_budget
         
         # 调用AI模型
         api_url = f"{model_config['base_url']}/chat/completions"
