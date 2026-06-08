@@ -538,7 +538,7 @@ class CommandIndex {
     // 执行生图设置命令
     executeImageSettings() {
         // 打开生图设置页面
-        window.open('/image-settings', '_blank');
+        window.open('/image-gen-settings', '_blank');
         this.showToast('已打开生图设置页面', 'success');
     }
 
@@ -712,9 +712,9 @@ class CommandIndex {
                         <li><strong>/ai-modify</strong> - AI事件模拟</li>
                         <li><strong>/auto-dialogue</strong> 或 <strong>/自动</strong> - 让当前角色连续生成多条对话</li>
                         <li><strong>/free-event</strong> 或 <strong>/自由事件</strong> - 多角色自由对话，支持智能数据书检索</li>
-                        <li><strong>/generate-image</strong> 或 <strong>/生图</strong> - 基于角色和聊天内容生成AI绘画</li>
-                        <li><strong>/生成图片第一人称</strong> - 生成第一人称视角的AI绘画（不读取玩家数据书）</li>
-                        <li><strong>/image-settings</strong> 或 <strong>/生图设置</strong> - 调整AI绘画生成参数</li>
+                        <li><strong>/generate-image</strong> 或 <strong>/生图</strong> - 直连 OpenAI/Gemini 生图 API，并自动注入角色头像作为参考</li>
+                        <li><strong>/生成图片第一人称</strong> - 第一人称视角生图（不读取玩家数据书）</li>
+                        <li><strong>/image-settings</strong> 或 <strong>/生图设置</strong> - 调整生图通用参数（负面词、尺寸、参考图数量等）</li>
                     </ul>
                     
                     <h4>💾 数据管理</h4>

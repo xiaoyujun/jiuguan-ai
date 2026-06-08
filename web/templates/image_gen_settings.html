@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>直连生图设置</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/model_config_page.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .ig-card {
+            background: var(--surface, #1f1f24);
+            border: 1px solid var(--border, #2a2a30);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 18px;
+        }
+        .ig-card h3 {
+            margin: 0 0 6px;
+            font-size: 18px;
+            color: var(--text-primary, #f0f0f5);
+        }
+        .ig-card p.ig-help {
+            margin: 0 0 18px;
+            color: var(--text-muted, #888);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .ig-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px 18px;
+        }
+        .ig-grid--single {
+            grid-template-columns: 1fr;
+        }
+        .ig-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .ig-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 12px;
+        }
+        .ig-status {
+            font-size: 13px;
+            color: var(--text-muted, #888);
+        }
+        .ig-status.is-error { color: #f08c8c; }
+        .ig-status.is-success { color: #87d18a; }
+        @media (max-width: 720px) {
+            .ig-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="mc-page">
+        <header class="mc-topbar">
+            <a class="mc-back" href="/" title="返回主页">
+                <i class="fas fa-arrow-left"></i>
+                <span>返回主页</span>
+            </a>
+            <div class="mc-topbar__title">
+                <span class="mc-eyebrow">Image Generation</span>
+                <h1>直连生图设置</h1>
+            </div>
+            <div class="mc-topbar__actions">
+                <a class="mc-btn mc-btn--ghost" href="/model_config">
+                    <i class="fas fa-microchip"></i>
+                    模型配置
+                </a>
+            </div>
+        </header>
+
+        <section class="ig-card">
+            <h3><i class="fas fa-circle-info"></i> 工作原理</h3>
+            <p class="ig-help">
+                聊天中的 <code>/生图</code> 与 <code>/生成图片第一人称</code> 命令会直接调用模型配置里类型为「生图」的模型，
+                并自动把当前角色（以及消息里 <code>@</code> 提及的角色）的头像作为参考图传入，强约束最终成图。
+                请先到 <a href="/model_config">模型配置</a> 创建生图模型，并在「功能分层」里把它选为生图模型。
+            </p>
+        </section>
+
+        <section class="ig-card">
+            <h3><i class="fas fa-sliders-h"></i> 通用参数</h3>
+            <p class="ig-help">这些参数会随每次生图请求一起下发，所有生图模型共用。</p>
+
+            <form id="igForm" class="ig-grid">
+                <label class="mc-field">
+                    <span>默认尺寸</span>
+                    <select id="igDefaultSize" class="mc-input" name="default_size">
+                        {% for size in allowed_sizes %}
+                        <option value="{{ size }}">{{ size }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label class="mc-field">
+                    <span>参考图数量上限</span>
+                    <input id="igMaxRefs" class="mc-input" type="number" min="1" max="6" step="1" name="max_reference_images">
+                </label>
+
+                <label class="mc-field" style="grid-column: 1 / -1;">
+                    <span>默认负面提示词</span>
+                    <textarea id="igNegativePrompt" class="mc-input" name="default_negative_prompt" rows="2"
+                              placeholder="例如：low quality, blurry, deformed, extra fingers, text, watermark"></textarea>
+                </label>
+
+                <label class="mc-field ig-toggle">
+                    <input id="igIncludePlayer" type="checkbox" name="include_player_reference">
+                    <span>第三人称生图时，把玩家头像也作为参考图</span>
+                </label>
+
+                <label class="mc-field ig-toggle">
+                    <input id="igIncludeCtx" type="checkbox" name="include_chat_context">
+                    <span>把最近的聊天记录作为剧情上下文写入提示词</span>
+                </label>
+
+                <label class="mc-field">
+                    <span>携带的聊天上下文条数 (0 - 30)</span>
+                    <input id="igCtxMessages" class="mc-input" type="number" min="0" max="30" step="1" name="chat_context_messages">
+                </label>
+            </form>
+
+            <div class="ig-actions">
+                <span id="igStatus" class="ig-status"></span>
+                <button class="mc-btn mc-btn--ghost" type="button" onclick="resetForm()">
+                    <i class="fas fa-undo"></i>
+                    恢复默认
+                </button>
+                <button class="mc-btn mc-btn--primary" type="button" onclick="saveSettings()">
+                    <i class="fas fa-save"></i>
+                    保存
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const DEFAULT_SETTINGS = {{ defaults | tojson }};
+        const ALLOWED_SIZES = {{ allowed_sizes | tojson }};
+
+        document.addEventListener('DOMContentLoaded', loadSettings);
+
+        async function loadSettings() {
+            try {
+                const resp = await fetch('/api/image-gen/settings');
+                const data = await resp.json();
+                if (!data.success) {
+                    setStatus(`加载失败: ${data.error || '未知错误'}`, 'error');
+                    return;
+                }
+                applySettings(data.settings || DEFAULT_SETTINGS);
+            } catch (err) {
+                setStatus(`加载失败: ${err.message}`, 'error');
+            }
+        }
+
+        function applySettings(settings) {
+            document.getElementById('igDefaultSize').value =
+                ALLOWED_SIZES.includes(settings.default_size) ? settings.default_size : DEFAULT_SETTINGS.default_size;
+            document.getElementById('igMaxRefs').value = settings.max_reference_images ?? DEFAULT_SETTINGS.max_reference_images;
+            document.getElementById('igNegativePrompt').value = settings.default_negative_prompt ?? DEFAULT_SETTINGS.default_negative_prompt;
+            document.getElementById('igIncludePlayer').checked = Boolean(settings.include_player_reference);
+            document.getElementById('igIncludeCtx').checked = Boolean(settings.include_chat_context);
+            document.getElementById('igCtxMessages').value = settings.chat_context_messages ?? DEFAULT_SETTINGS.chat_context_messages;
+        }
+
+        function collectPayload() {
+            return {
+                default_size: document.getElementById('igDefaultSize').value,
+                max_reference_images: Number(document.getElementById('igMaxRefs').value) || DEFAULT_SETTINGS.max_reference_images,
+                default_negative_prompt: document.getElementById('igNegativePrompt').value,
+                include_player_reference: document.getElementById('igIncludePlayer').checked,
+                include_chat_context: document.getElementById('igIncludeCtx').checked,
+                chat_context_messages: Number(document.getElementById('igCtxMessages').value),
+            };
+        }
+
+        async function saveSettings() {
+            setStatus('保存中…', '');
+            try {
+                const resp = await fetch('/api/image-gen/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(collectPayload()),
+                });
+                const data = await resp.json();
+                if (!data.success) {
+                    setStatus(`保存失败: ${data.error || '未知错误'}`, 'error');
+                    return;
+                }
+                applySettings(data.settings);
+                setStatus('已保存', 'success');
+            } catch (err) {
+                setStatus(`保存失败: ${err.message}`, 'error');
+            }
+        }
+
+        function resetForm() {
+            applySettings(DEFAULT_SETTINGS);
+            setStatus('已恢复默认值（尚未保存）', '');
+        }
+
+        function setStatus(text, kind) {
+            const el = document.getElementById('igStatus');
+            el.textContent = text;
+            el.classList.toggle('is-error', kind === 'error');
+            el.classList.toggle('is-success', kind === 'success');
+        }
+    </script>
+</body>
+</html>

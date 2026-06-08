@@ -306,87 +306,69 @@ def chat():
         if user_input.strip() == '/生图':
             print(f"🎨 检测到图片生成命令")
             try:
-                try:
-                    from web.comfyui.image_generation_routes import handle_generate_image_command
-                except ImportError:
-                    # 如果导入失败，尝试其他路径
-                    import os
-                    import sys
-                    comfyui_path = os.path.join(os.path.dirname(__file__), 'comfyui')
-                    sys.path.insert(0, comfyui_path)
-                    from image_generation_routes import handle_generate_image_command
-                
-                # 获取聊天历史
+                from web.image_gen.routes import handle_generate_image_command
+
                 history = load_history(role_name)
-                
-                # 处理图片生成命令
                 image_result = handle_generate_image_command(role_name, history)
-                
-                if image_result['success']:
+
+                if image_result.get('success'):
+                    image_paths = image_result.get('image_paths') or []
                     return jsonify({
-                        'content': image_result['message'],
-                        'voice_id': None,  # 图片生成不需要语音
+                        'content': image_result.get('message') or '',
+                        'voice_id': None,
                         'is_image_generation': True,
-                        'image_paths': image_result.get('image_paths', []),
-                        'prompt': image_result.get('prompt', '')
+                        'image_paths': image_paths,
+                        'prompt': image_result.get('prompt', ''),
+                        'reference_images': image_result.get('reference_images', []),
                     })
                 else:
                     return jsonify({
-                        'content': f"❌ {image_result.get('message', '图片生成失败')}",
+                        'content': f"❌ {image_result.get('error') or image_result.get('message') or '图片生成失败'}",
                         'voice_id': None,
-                        'is_image_generation': False
+                        'is_image_generation': False,
                     })
-                    
+
             except Exception as e:
                 print(f"❌ 图片生成命令处理失败: {e}")
                 return jsonify({
                     'content': f"❌ 图片生成失败: {str(e)}",
                     'voice_id': None,
-                    'is_image_generation': False
+                    'is_image_generation': False,
                 })
-        
+
         # 检查是否是第一人称图片生成命令
         if user_input.strip() == '/生成图片第一人称':
             print(f"🎨 检测到第一人称图片生成命令")
             try:
-                try:
-                    from web.comfyui.image_generation_routes import handle_generate_first_person_image_command
-                except ImportError:
-                    # 如果导入失败，尝试其他路径
-                    import os
-                    import sys
-                    comfyui_path = os.path.join(os.path.dirname(__file__), 'comfyui')
-                    sys.path.insert(0, comfyui_path)
-                    from image_generation_routes import handle_generate_first_person_image_command
-                
-                # 获取聊天历史
+                from web.image_gen.routes import handle_generate_first_person_image_command
+
                 history = load_history(role_name)
-                
-                # 处理第一人称图片生成命令
                 image_result = handle_generate_first_person_image_command(role_name, history)
-                
-                if image_result['success']:
+
+                if image_result.get('success'):
+                    image_paths = image_result.get('image_paths') or []
                     return jsonify({
-                        'content': image_result['message'],
-                        'voice_id': None,  # 图片生成不需要语音
+                        'content': image_result.get('message') or '',
+                        'voice_id': None,
                         'is_image_generation': True,
-                        'is_first_person': True,  # 标识这是第一人称视角图片
-                        'image_paths': image_result.get('image_paths', []),
-                        'prompt': image_result.get('prompt', '')
+                        'is_first_person': True,
+                        'image_paths': image_paths,
+                        'prompt': image_result.get('prompt', ''),
+                        'reference_images': image_result.get('reference_images', []),
                     })
                 else:
                     return jsonify({
-                        'content': f"❌ {image_result.get('message', '第一人称图片生成失败')}",
+                        'content': f"❌ {image_result.get('error') or image_result.get('message') or '第一人称图片生成失败'}",
                         'voice_id': None,
-                        'is_image_generation': False
+                        'is_image_generation': False,
                     })
-                    
+
             except Exception as e:
                 print(f"❌ 第一人称图片生成命令处理失败: {e}")
                 return jsonify({
                     'content': f"❌ 第一人称图片生成失败: {str(e)}",
                     'voice_id': None,
-                    'is_image_generation': False
+                    'is_image_generation': False,
                 })
         
         # 旁白角色自动@处理

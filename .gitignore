@@ -29,7 +29,6 @@ config.json
 聊天记录/
 日志/
 web/static/generated_images/
-web/comfyui/参考/output/
 
 # Project runtime data (current data/ layout)
 # 包含密码哈希、API key、聊天记录、角色资料等用户私有内容

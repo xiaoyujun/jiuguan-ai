@@ -11,11 +11,16 @@ import requests
 from flask import Blueprint, jsonify, render_template, request
 
 from web.model_config_utils import (
+    DEFAULT_MODEL_KIND,
+    MODEL_KIND_CHOICES,
+    PROVIDER_API_FORMAT_CHOICES,
     REASONING_EFFORT_CHOICES,
     VERBOSITY_CHOICES,
     auto_generate_model_key,
     ensure_chat_model_structure,
     infer_provider_name,
+    normalize_model_kind,
+    normalize_provider_api_format,
     parse_optional_choice,
     parse_optional_extra_body,
     parse_optional_number,
@@ -45,6 +50,12 @@ LOW_PERFORMANCE_DEFAULT = {
     "functions": ["simple_analysis", "basic_filter"],
 }
 
+IMAGE_GENERATION_DEFAULT = {
+    "name": "生图模型",
+    "description": "用于直接调用 OpenAI / Gemini 生图 API",
+    "functions": ["image_generation"],
+}
+
 
 def _load_config() -> Dict[str, Any]:
     config = ConfigManager.load_config()
@@ -62,6 +73,8 @@ def _ensure_model_tiers(config: Dict[str, Any]) -> Dict[str, Any]:
         model_tiers["medium_performance"] = MEDIUM_PERFORMANCE_DEFAULT.copy()
     if "low_performance" not in model_tiers:
         model_tiers["low_performance"] = LOW_PERFORMANCE_DEFAULT.copy()
+    if "image_generation" not in model_tiers:
+        model_tiers["image_generation"] = IMAGE_GENERATION_DEFAULT.copy()
     return model_tiers
 
 
@@ -96,6 +109,7 @@ def _get_model_payload(data: Dict[str, Any], models: Dict[str, Any], model_key: 
 
     payload: Dict[str, Any] = {
         "name": (data.get("name") or model_name).strip(),
+        "kind": normalize_model_kind(data.get("kind")),
         "provider_key": provider_key,
         "model": model_name,
         "stream": bool(data.get("stream", True)),
@@ -161,7 +175,7 @@ def _get_provider_payload(data: Dict[str, Any], providers: Dict[str, Any], provi
         "name": name,
         "base_url": base_url.rstrip("/"),
         "api_key": api_key,
-        "api_format": "openai",
+        "api_format": normalize_provider_api_format(data.get("api_format")),
     }
 
     return final_provider_key, payload
@@ -178,6 +192,8 @@ def _build_config_response(config: Dict[str, Any]) -> Dict[str, Any]:
         "providers": chat_models.get("providers", {}),
         "models": resolve_all_models(config),
         "model_tiers": model_tiers,
+        "model_kinds": list(MODEL_KIND_CHOICES),
+        "provider_api_formats": list(PROVIDER_API_FORMAT_CHOICES),
     }
 
 
@@ -307,6 +323,9 @@ def set_current_chat_model():
         models = config.get("chat_models", {}).get("models", {})
         if model_key not in models:
             return jsonify({"success": False, "error": "模型不存在"}), 404
+
+        if (models.get(model_key) or {}).get("kind", DEFAULT_MODEL_KIND) != "chat":
+            return jsonify({"success": False, "error": "当前聊天模型必须是聊天类型"}), 400
 
         config["chat_models"]["current_model"] = model_key
         model_tiers = _ensure_model_tiers(config)
@@ -503,7 +522,9 @@ def create_chat_model():
 
         models[model_key] = payload
 
-        if not chat_models.get("current_model"):
+        # 仅在新模型是聊天类型时，才把它升格为 current_model / 高性能默认模型；
+        # 生图模型如果想被使用，请到模型分层里把它放到 image_generation
+        if payload.get("kind", DEFAULT_MODEL_KIND) == "chat" and not chat_models.get("current_model"):
             chat_models["current_model"] = model_key
             _ensure_model_tiers(config)["high_performance"]["default_model"] = model_key
 
@@ -608,30 +629,51 @@ def api_model_config():
 
 @config_bp.route("/api/model_tiers", methods=["POST"])
 def save_model_tiers():
-    """保存三级模型配置。"""
+    """保存四级模型配置（含生图模型）。"""
     try:
         data = request.json or {}
         config = _load_config()
         model_tiers = _ensure_model_tiers(config)
-        model_keys = set(config.get("chat_models", {}).get("models", {}).keys())
+        models = config.get("chat_models", {}).get("models", {})
+        model_keys = set(models.keys())
 
         tier_mapping = {
-            "high_performance": HIGH_PERFORMANCE_DEFAULT,
-            "medium_performance": MEDIUM_PERFORMANCE_DEFAULT,
-            "low_performance": LOW_PERFORMANCE_DEFAULT,
+            "high_performance": (HIGH_PERFORMANCE_DEFAULT, "chat"),
+            "medium_performance": (MEDIUM_PERFORMANCE_DEFAULT, "chat"),
+            "low_performance": (LOW_PERFORMANCE_DEFAULT, "chat"),
+            "image_generation": (IMAGE_GENERATION_DEFAULT, "image"),
         }
 
-        for tier_key, default_value in tier_mapping.items():
-            selected_model = data.get(tier_key)
-            if not selected_model:
+        for tier_key, (default_value, expected_kind) in tier_mapping.items():
+            if tier_key not in data:
                 continue
+
+            selected_model = data.get(tier_key)
+            tier_config = model_tiers.setdefault(tier_key, default_value.copy())
+
+            if not selected_model:
+                # 允许显式清空（前端传 None 或空字符串）
+                tier_config["default_model"] = None
+                continue
+
             if selected_model not in model_keys:
                 return jsonify({"success": False, "error": f"{tier_key} 选择了不存在的模型"}), 400
-            model_tiers.setdefault(tier_key, default_value.copy())
-            model_tiers[tier_key]["default_model"] = selected_model
+
+            actual_kind = (models.get(selected_model) or {}).get("kind", DEFAULT_MODEL_KIND)
+            if actual_kind != expected_kind:
+                return jsonify(
+                    {
+                        "success": False,
+                        "error": f"{tier_key} 需要类型为「{expected_kind}」的模型，但所选模型类型是「{actual_kind}」",
+                    }
+                ), 400
+
+            tier_config["default_model"] = selected_model
 
         high_performance_model = model_tiers.get("high_performance", {}).get("default_model")
-        if high_performance_model in model_keys:
+        if high_performance_model in model_keys and (models.get(high_performance_model) or {}).get(
+            "kind", DEFAULT_MODEL_KIND
+        ) == "chat":
             config["chat_models"]["current_model"] = high_performance_model
 
         if not _save_config(config):
@@ -640,7 +682,7 @@ def save_model_tiers():
         return jsonify(
             {
                 "success": True,
-                "message": "三级模型配置保存成功",
+                "message": "模型分层配置保存成功",
                 "current_model": config.get("chat_models", {}).get("current_model"),
             }
         )

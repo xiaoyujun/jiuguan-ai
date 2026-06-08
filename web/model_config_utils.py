@@ -62,6 +62,30 @@ def parse_optional_number(value: Any, *, as_int: bool = False) -> int | float | 
 REASONING_EFFORT_CHOICES = ("minimal", "low", "medium", "high")
 VERBOSITY_CHOICES = ("low", "medium", "high")
 
+# 模型用途。chat = 聊天/分析；image = 调用 OpenAI/Gemini 风格的生图接口
+MODEL_KIND_CHOICES = ("chat", "image")
+DEFAULT_MODEL_KIND = "chat"
+
+# 供应商 API 风格。openai 走 OpenAI 兼容协议；gemini 走 Google 原生协议
+PROVIDER_API_FORMAT_CHOICES = ("openai", "gemini")
+DEFAULT_PROVIDER_API_FORMAT = "openai"
+
+
+def normalize_model_kind(value: Any) -> str:
+    """规范化模型用途字段；非法值回退到默认 ``chat``。"""
+    if value in (None, ""):
+        return DEFAULT_MODEL_KIND
+    text = str(value).strip().lower()
+    return text if text in MODEL_KIND_CHOICES else DEFAULT_MODEL_KIND
+
+
+def normalize_provider_api_format(value: Any) -> str:
+    """规范化供应商接口风格；非法值回退到 ``openai``。"""
+    if value in (None, ""):
+        return DEFAULT_PROVIDER_API_FORMAT
+    text = str(value).strip().lower()
+    return text if text in PROVIDER_API_FORMAT_CHOICES else DEFAULT_PROVIDER_API_FORMAT
+
 
 def parse_optional_choice(value: Any, choices: tuple) -> str | None:
     """将可选枚举字段规范化；空值或非法值返回 None。"""
@@ -154,13 +178,22 @@ def ensure_chat_model_structure(config: Dict[str, Any]) -> bool:
         provider.setdefault("name", infer_provider_name(provider.get("base_url")))
         provider.setdefault("base_url", "")
         provider.setdefault("api_key", "")
-        provider.setdefault("api_format", "openai")
+        normalized_format = normalize_provider_api_format(provider.get("api_format"))
+        if provider.get("api_format") != normalized_format:
+            provider["api_format"] = normalized_format
+            changed = True
         provider_index[_build_provider_fingerprint(provider["base_url"], provider["api_key"])] = provider_key
 
     for model_key, model_config in list(models.items()):
         if not isinstance(model_config, dict):
             models[model_key] = {}
             model_config = models[model_key]
+            changed = True
+
+        # 用途字段：旧配置默认归为 chat
+        normalized_kind = normalize_model_kind(model_config.get("kind"))
+        if model_config.get("kind") != normalized_kind:
+            model_config["kind"] = normalized_kind
             changed = True
 
         provider_key = model_config.get("provider_key")
@@ -200,6 +233,7 @@ def ensure_chat_model_structure(config: Dict[str, Any]) -> bool:
         )
         models[DEFAULT_CHAT_MODEL_KEY] = {
             "name": DEFAULT_MODEL_NAME,
+            "kind": DEFAULT_MODEL_KIND,
             "provider_key": DEFAULT_PROVIDER_KEY,
             "model": DEFAULT_MODEL_ID,
             "stream": True,
@@ -208,10 +242,15 @@ def ensure_chat_model_structure(config: Dict[str, Any]) -> bool:
         changed = True
 
     current_model = chat_models.get("current_model")
-    if current_model not in models:
+    if current_model not in models or models.get(current_model, {}).get("kind", DEFAULT_MODEL_KIND) != "chat":
         high_performance = config.get("model_tiers", {}).get("high_performance", {})
         candidate = high_performance.get("default_model")
-        if candidate not in models:
+        if candidate not in models or models.get(candidate, {}).get("kind", DEFAULT_MODEL_KIND) != "chat":
+            candidate = next(
+                (key for key, value in models.items() if (value or {}).get("kind", DEFAULT_MODEL_KIND) == "chat"),
+                None,
+            )
+        if candidate is None:
             candidate = next(iter(models.keys()), DEFAULT_CHAT_MODEL_KEY)
         chat_models["current_model"] = candidate
         changed = True
@@ -258,8 +297,10 @@ def resolve_model_config(config: Dict[str, Any], model_key: str | None) -> Dict[
     resolved = {
         "model_key": model_key,
         "name": model_config.get("name") or model_config.get("model") or model_key,
+        "kind": normalize_model_kind(model_config.get("kind")),
         "provider_key": provider_key,
         "provider_name": provider.get("name") or infer_provider_name(provider.get("base_url")),
+        "api_format": normalize_provider_api_format(provider.get("api_format")),
         "base_url": provider.get("base_url") or model_config.get("base_url") or "",
         "api_key": provider.get("api_key") or model_config.get("api_key") or "",
         "key": provider.get("api_key") or model_config.get("api_key") or "",

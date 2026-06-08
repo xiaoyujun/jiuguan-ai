@@ -49,15 +49,7 @@ from web.storybook_api_routes import storybook_api_bp
 from web.auto_commands.auto_routes import auto_command_bp  # 自动指令蓝图
 from web.memories import memories_bp  # 纪念与回顾蓝图
 from web.event.event_routes import event_bp  # 自由事件蓝图
-try:
-    from web.comfyui.image_generation_routes import image_bp
-    from web.comfyui.settings_routes import settings_bp
-except ImportError as e:
-    print(f"Warning: Failed to import image generation routes: {e}")
-    # 创建一个空的蓝图作为备用
-    from flask import Blueprint
-    image_bp = Blueprint('image_generation_fallback', __name__)
-    settings_bp = Blueprint('image_settings_fallback', __name__)
+from web.image_gen import image_gen_bp  # 直连生图蓝图（替代 ComfyUI）
 
 # 导入插件系统
 from web.plugins.plugin_manager import plugin_manager
@@ -106,19 +98,10 @@ def global_auth_check():
         'user_attributes.create_character_storybook', # 创建数据书API
         'user_attributes.get_current_player',    # 获取当前玩家API
         'user_attributes.check_binding_status',  # 检查绑定状态API(向后兼容)
-        'image_settings.image_settings_page',    # 图片设置页面
-        'image_settings.get_image_settings',     # 获取图片设置API
-        'image_settings.update_image_settings',  # 更新图片设置API
-        'image_settings.reset_image_settings',   # 重置图片设置API
-        'image_settings.validate_image_settings', # 验证图片设置API
-        'image_settings.test_comfyui_connection', # 测试ComfyUI连接API
-        'image_settings.get_workflow_files',     # 获取工作流文件列表API
-        'image_settings.get_workflow_content',   # 获取工作流文件内容API
-        'image_settings.upload_workflow_file',   # 上传工作流文件API
-        'image_settings.get_history_images',     # 获取历史图像API
-        'image_settings.delete_history_image',   # 删除历史图像API
-        'image_settings.clear_history_images',   # 清空历史图像API
-        'image_settings.serve_generated_image',  # 提供生成图像文件API
+        'image_gen.image_gen_settings_page',     # 直连生图设置页面
+        'image_gen.get_image_gen_settings',      # 获取直连生图设置 API
+        'image_gen.update_image_gen_settings',   # 更新直连生图设置 API
+        'image_gen.api_generate_image',          # 直连生图触发 API
         'event.free_event_page',                 # 自由事件页面
         'event.get_roles',                       # 获取角色列表API
         'event.get_players',                     # 获取玩家列表API
@@ -198,8 +181,7 @@ app.register_blueprint(hidden_settings_bp)  # 注册底层设定管理蓝图
 app.register_blueprint(semantic_search_bp)  # 注册语义搜索蓝图
 app.register_blueprint(semantic_correction_bp)  # 注册语义修正蓝图
 app.register_blueprint(storybook_api_bp)  # 注册统一数据书API蓝图
-app.register_blueprint(image_bp)  # 注册图片生成蓝图
-app.register_blueprint(settings_bp)  # 注册图片设置蓝图
+app.register_blueprint(image_gen_bp)  # 注册直连生图蓝图
 app.register_blueprint(auto_command_bp)  # 注册自动指令蓝图
 app.register_blueprint(memories_bp)  # 注册纪念与回顾蓝图
 app.register_blueprint(event_bp)  # 注册自由事件蓝图

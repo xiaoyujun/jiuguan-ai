@@ -85,6 +85,12 @@
                     <span class="mc-tier__desc">基础分析 · 简单过滤</span>
                     <select id="lowTierSelect" name="low_performance" class="mc-input"></select>
                 </label>
+                <label class="mc-tier" data-tier="image">
+                    <span class="mc-tier__rank">图</span>
+                    <span class="mc-tier__title">生图模型</span>
+                    <span class="mc-tier__desc">直连 OpenAI / Gemini 生图 API</span>
+                    <select id="imageTierSelect" name="image_generation" class="mc-input"></select>
+                </label>
                 <div class="mc-tier__save">
                     <button class="mc-btn mc-btn--primary" type="submit">
                         <i class="fas fa-save"></i>
@@ -141,6 +147,13 @@
                     <span>API Key</span>
                     <input id="providerApiKey" class="mc-input" name="api_key" type="password" placeholder="sk-...">
                 </label>
+                <label class="mc-field">
+                    <span>API 风格</span>
+                    <select id="providerApiFormat" class="mc-input" name="api_format">
+                        <option value="openai">OpenAI 兼容（含 gpt-image-1 / siliconflow / 自建）</option>
+                        <option value="gemini">Google Gemini 原生</option>
+                    </select>
+                </label>
             </form>
             <footer class="mc-modal__foot">
                 <button class="mc-btn mc-btn--ghost" type="button" onclick="closeProviderModal()">取消</button>
@@ -178,9 +191,19 @@
 
                 <div class="mc-form__row">
                     <label class="mc-field">
+                        <span>模型用途</span>
+                        <select id="modelKind" class="mc-input" name="kind">
+                            <option value="chat">聊天 / 分析</option>
+                            <option value="image">生图（OpenAI / Gemini 生图 API）</option>
+                        </select>
+                    </label>
+                    <label class="mc-field">
                         <span>所属供应商</span>
                         <select id="modelProviderKey" class="mc-input" name="provider_key" required></select>
                     </label>
+                </div>
+
+                <div class="mc-form__row">
                     <div class="mc-field">
                         <span>从供应商拉取</span>
                         <div class="mc-fetch">
@@ -197,14 +220,14 @@
 
                 <label class="mc-field">
                     <span>模型 ID</span>
-                    <input id="modelIdentifier" class="mc-input" list="providerModelDatalist" type="text" name="model" placeholder="例如 gpt-4o-mini / deepseek-ai/DeepSeek-V3" required>
+                    <input id="modelIdentifier" class="mc-input" list="providerModelDatalist" type="text" name="model" placeholder="例如 gpt-4o-mini / gpt-image-1 / gemini-2.5-flash-image" required>
                     <datalist id="providerModelDatalist"></datalist>
                 </label>
 
-                <label class="mc-toggle">
+                <label class="mc-toggle" id="modelStreamToggle">
                     <input id="modelStream" name="stream" type="checkbox" checked>
                     <span class="mc-toggle__track"></span>
-                    <span class="mc-toggle__label">启用流式输出</span>
+                    <span class="mc-toggle__label">启用流式输出（仅聊天模型）</span>
                 </label>
 
                 <div class="mc-advanced">

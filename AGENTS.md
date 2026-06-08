@@ -11,7 +11,7 @@
 - Backend: Python + Flask blueprints.
 - Frontend: server-rendered Jinja templates plus plain JavaScript and CSS.
 - AI access: OpenAI-compatible APIs routed through `API.py`.
-- Optional integrations: ComfyUI image generation, plugin system, vectorized temporary-data analysis.
+- Optional integrations: direct OpenAI/Gemini image generation (`web/image_gen/`), plugin system, vectorized temporary-data analysis.
 - Auth: session-based checks in `web/app_new.py`.
 - Persistence: `config.json`, `聊天记录/`, `角色/`, `玩家/`, `数据书/`, `全局世界书/`, `.hidden_settings/`.
 
@@ -49,7 +49,6 @@
 - Example single-script tests:
 - `python web/auto_commands/test_auto_command.py`
 - `python web/auto_commands/integration_check.py`
-- `python web/comfyui/test_image_generation.py`
 - `python web/vectorized_temp_data/test_chat_integration.py`
 - `python web/vectorized_temp_data/test_actual_chat_prompt.py`
 - `python web/vectorized_temp_data/test_role_context_enhancement.py`
@@ -57,7 +56,7 @@
 - To run one specific test function inside a script-style module, use `python -c`.
 - Example: `python -c "from web.auto_commands.test_auto_command import test_auto_command_parser; test_auto_command_parser()"`
 - Example: `python -c "from web.vectorized_temp_data.test_chat_integration import test_edge_cases; test_edge_cases()"`
-- ComfyUI tests require a live ComfyUI server, usually `127.0.0.1:8188`, plus workflow files.
+- Image generation tests require valid API keys for the configured image provider (OpenAI gpt-image-1 or Google Gemini multimodal) and at least one role with an avatar in `data/角色/`.
 - AI/vectorized tests may depend on populated local data folders and a valid model configuration.
 
 ## Existing Cursor And Copilot Rules
@@ -101,7 +100,6 @@
 - Prefer `jsonify({...})` responses with explicit HTTP status codes.
 - Common response shape is `{'success': True, 'data': ..., 'message': ...}` on success.
 - Common error shape is `{'success': False, 'error': '...'};` add `requires_login` when auth state matters.
-- Preserve optional-dependency fallbacks, such as the ComfyUI blueprint import fallback in `web/app_new.py`.
 - Do not bypass or weaken session checks without a clear requirement.
 
 ## Error Handling And Logging
@@ -152,7 +150,7 @@
 - `@角色名` parsing is primarily handled in `web/static/js/character_reply_handler.js` and corresponding chat backend logic.
 - Self-speak mode is triggered when the message is only an `@角色名` mention.
 - Multi-chat and narrator auto-mention flows have special-case logic; inspect both frontend and backend before changing them.
-- Image generation features depend on ComfyUI and should degrade gracefully when unavailable.
+- Image generation goes through `web/image_gen/` (providers in `web/image_gen/providers/`), driven by the `image_generation` model tier configured in `/model_config`. Settings live in `data/image_gen_settings.json`; outputs land in `data/聊天记录/<book>/生成图片/` and are mirrored to `web/static/generated_images/` for serving. The chat commands `/生图` and `/生成图片第一人称` dispatch through `web/chat_routes.py` into `web/image_gen/routes.py`.
 
 ## Practical Advice For Agents
 - Search for both English and Chinese identifiers before deciding a symbol is unused.

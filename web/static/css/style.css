@@ -835,12 +835,18 @@ select {
 .message-bubble {
     padding: 18px 22px;
     border-radius: 15px;
-    font-family: 'Crimson Text', serif;
-    font-size: 14px;
-    line-height: 1.6;
+    /* 中英文都用人眼舒服的字体栈：英文走 Inter/系统无衬线，中文走苹方/微软雅黑/思源 */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+                 'Microsoft YaHei', 'Noto Sans SC', 'Source Han Sans SC',
+                 'Hiragino Sans GB', sans-serif;
+    font-size: 15px;
+    line-height: 1.75;
+    letter-spacing: 0.2px;
     word-wrap: break-word;
     max-width: 100%;
     position: relative;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 
@@ -995,7 +1001,7 @@ select {
     box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);
 }
 
-.user-message .player-bubble strong {
+.user-message .player-bubble > strong:first-child {
     color: #c8e6c9;
     font-family: 'Cinzel', serif;
     font-weight: 700;
@@ -1033,7 +1039,7 @@ select {
     font-size: 16px;
 }
 
-.ai-message .message-bubble strong {
+.ai-message .message-bubble > strong:first-child {
     color: var(--text-gold);
     font-family: 'Cinzel', serif;
     font-weight: 700;
@@ -1041,6 +1047,60 @@ select {
     display: block;
     font-size: 15px;
     text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+}
+
+/* ===== 气泡内行内排版（粗体 / 动作斜体 / 对话引号） ===== */
+/* 由 message_data_collapse.js 的 applyInlineTypography 注入 */
+
+.message-bubble .bubble-bold {
+    display: inline;            /* 抵消上方角色名 strong 的 block 样式继承 */
+    margin-bottom: 0;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: 600;
+    color: inherit;
+    text-shadow: none;
+    letter-spacing: 0.3px;
+}
+
+.user-message .message-bubble .bubble-bold {
+    color: #fff8e1;
+}
+
+.ai-message .message-bubble .bubble-bold {
+    color: #ffd28a;
+}
+
+/* 动作 / 神态：斜体、低饱和、稍降透明度 */
+.message-bubble .bubble-action {
+    font-style: italic;
+    font-family: inherit;
+    color: rgba(220, 220, 230, 0.62);
+    font-weight: 400;
+}
+
+.ai-message .message-bubble .bubble-action {
+    color: rgba(210, 195, 230, 0.7);
+}
+
+.user-message .message-bubble .bubble-action {
+    color: rgba(255, 245, 220, 0.7);
+}
+
+/* 对话内容：保留原引号、轻量高亮、不发光 */
+.message-bubble .bubble-dialogue {
+    font-style: normal;
+    font-weight: 500;
+    color: #ffe1a8;
+    text-shadow: none;
+}
+
+.user-message .message-bubble .bubble-dialogue {
+    color: #ffffff;
+}
+
+.ai-message .message-bubble .bubble-dialogue {
+    color: #ffe1a8;
 }
 
 @keyframes pulse-glow {

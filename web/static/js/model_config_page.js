@@ -23,6 +23,13 @@
             });
         }
 
+        const kindSelect = document.getElementById("modelKind");
+        if (kindSelect) {
+            kindSelect.addEventListener("change", (event) => {
+                applyKindToForm(event.target.value);
+            });
+        }
+
         loadConfiguration();
     });
 
@@ -179,9 +186,14 @@
 
     function renderModelCard(modelKey, model) {
         const isCurrent = state.currentModel === modelKey;
+        const kindLabel = (model.kind || "chat") === "image" ? "生图" : "聊天";
+        const kindClass = (model.kind || "chat") === "image" ? "mc-tag--reason" : "";
         const tags = [
-            `<span class="mc-tag ${model.stream ? "mc-tag--stream" : "mc-tag--off"}">${model.stream ? "流式" : "非流式"}</span>`
+            `<span class="mc-tag ${kindClass}">${kindLabel}</span>`,
         ];
+        if ((model.kind || "chat") !== "image") {
+            tags.push(`<span class="mc-tag ${model.stream ? "mc-tag--stream" : "mc-tag--off"}">${model.stream ? "流式" : "非流式"}</span>`);
+        }
         if (model.temperature !== null && model.temperature !== undefined) {
             tags.push(`<span class="mc-tag">T ${model.temperature}</span>`);
         }
@@ -204,6 +216,9 @@
             tags.push(`<span class="mc-tag mc-tag--reason" title="自定义额外参数">extra</span>`);
         }
 
+        // 生图模型不参与「设为当前聊天模型」
+        const isImageKind = (model.kind || "chat") === "image";
+
         return `
             <div class="mc-model${isCurrent ? " is-current" : ""}">
                 <div class="mc-model__head">
@@ -215,8 +230,8 @@
                 </div>
                 <div class="mc-model__tags">${tags.join("")}</div>
                 <div class="mc-model__actions">
-                    ${isCurrent ? "" : `<button class="mc-icon-btn" type="button" title="设为当前聊天模型" onclick="activateModel('${escapeJs(modelKey)}')"><i class="fas fa-star"></i></button>`}
-                    <button class="mc-icon-btn" type="button" title="测试" onclick="testSavedModel('${escapeJs(modelKey)}')"><i class="fas fa-vial"></i></button>
+                    ${isCurrent || isImageKind ? "" : `<button class="mc-icon-btn" type="button" title="设为当前聊天模型" onclick="activateModel('${escapeJs(modelKey)}')"><i class="fas fa-star"></i></button>`}
+                    ${isImageKind ? "" : `<button class="mc-icon-btn" type="button" title="测试" onclick="testSavedModel('${escapeJs(modelKey)}')"><i class="fas fa-vial"></i></button>`}
                     <button class="mc-icon-btn" type="button" title="编辑" onclick="openModelModal('${escapeJs(modelKey)}')"><i class="fas fa-pen"></i></button>
                     <button class="mc-icon-btn mc-icon-btn--danger" type="button" title="删除" onclick="deleteModel('${escapeJs(modelKey)}')"><i class="fas fa-trash"></i></button>
                 </div>
@@ -235,22 +250,26 @@
 
     function renderTierOptions() {
         const selectMapping = {
-            highTierSelect: state.modelTiers.high_performance?.default_model || "",
-            mediumTierSelect: state.modelTiers.medium_performance?.default_model || "",
-            lowTierSelect: state.modelTiers.low_performance?.default_model || "",
+            highTierSelect: { kind: "chat", value: state.modelTiers.high_performance?.default_model || "" },
+            mediumTierSelect: { kind: "chat", value: state.modelTiers.medium_performance?.default_model || "" },
+            lowTierSelect: { kind: "chat", value: state.modelTiers.low_performance?.default_model || "" },
+            imageTierSelect: { kind: "image", value: state.modelTiers.image_generation?.default_model || "" },
         };
 
-        Object.entries(selectMapping).forEach(([selectId, value]) => {
+        Object.entries(selectMapping).forEach(([selectId, { kind, value }]) => {
             const select = document.getElementById(selectId);
             if (!select) {
                 return;
             }
 
-            const options = ['<option value="">请选择模型</option>'].concat(
-                Object.entries(state.models).map(
-                    ([modelKey, model]) =>
-                        `<option value="${escapeHtml(modelKey)}">${escapeHtml(model.name)} · ${escapeHtml(model.provider_name || "")}</option>`
-                )
+            const placeholder = kind === "image" ? "请选择生图模型" : "请选择模型";
+            const options = [`<option value="">${placeholder}</option>`].concat(
+                Object.entries(state.models)
+                    .filter(([, model]) => (model.kind || "chat") === kind)
+                    .map(
+                        ([modelKey, model]) =>
+                            `<option value="${escapeHtml(modelKey)}">${escapeHtml(model.name)} · ${escapeHtml(model.provider_name || "")}</option>`
+                    )
             );
             select.innerHTML = options.join("");
             select.value = value;
@@ -298,6 +317,15 @@
         const formData = new FormData(form);
         const payload = Object.fromEntries(formData.entries());
         payload.stream = document.getElementById("modelStream").checked;
+        payload.kind = document.getElementById("modelKind").value || "chat";
+
+        // 生图模型不存在 stream / 推理 / 思考预算等参数，统一清空避免污染配置
+        if (payload.kind === "image") {
+            ["temperature", "max_tokens", "context_window", "top_p",
+             "presence_penalty", "frequency_penalty", "reasoning_effort",
+             "verbosity", "thinking_budget"].forEach((field) => delete payload[field]);
+            payload.stream = false;
+        }
 
         [
             "temperature",
@@ -345,9 +373,17 @@
             document.getElementById("providerName").value = provider.name || "";
             document.getElementById("providerBaseUrl").value = provider.base_url || "";
             document.getElementById("providerApiKey").value = provider.api_key || "";
+            const formatEl = document.getElementById("providerApiFormat");
+            if (formatEl) {
+                formatEl.value = provider.api_format || "openai";
+            }
         } else {
             document.getElementById("providerKey").value = "";
             document.getElementById("providerKey").readOnly = false;
+            const formatEl = document.getElementById("providerApiFormat");
+            if (formatEl) {
+                formatEl.value = "openai";
+            }
         }
 
         document.getElementById("providerModal").classList.add("visible");
@@ -422,6 +458,8 @@
         document.getElementById("modelForm").reset();
         document.getElementById("modelKey").readOnly = false;
         document.getElementById("modelStream").checked = true;
+        document.getElementById("modelKind").value = "chat";
+        applyKindToForm("chat");
         document.getElementById("advancedFields").classList.add("hidden");
         const chevron = document.querySelector(".mc-advanced__chevron");
         if (chevron) chevron.classList.remove("is-open");
@@ -433,6 +471,8 @@
             document.getElementById("modelKey").value = modelKey;
             document.getElementById("modelKey").readOnly = true;
             document.getElementById("modelName").value = model.name || "";
+            document.getElementById("modelKind").value = model.kind || "chat";
+            applyKindToForm(model.kind || "chat");
             document.getElementById("modelProviderKey").value = model.provider_key || "";
             document.getElementById("modelIdentifier").value = model.model || "";
             document.getElementById("modelStream").checked = Boolean(model.stream);
@@ -463,6 +503,22 @@
         }
 
         document.getElementById("modelModal").classList.add("visible");
+    }
+
+    function applyKindToForm(kind) {
+        const isImage = kind === "image";
+        const streamWrap = document.getElementById("modelStreamToggle");
+        const advanced = document.getElementById("advancedFields");
+        const advancedToggle = document.getElementById("advancedToggle");
+        if (streamWrap) {
+            streamWrap.style.display = isImage ? "none" : "";
+        }
+        if (advancedToggle) {
+            advancedToggle.style.display = isImage ? "none" : "";
+        }
+        if (advanced && isImage) {
+            advanced.classList.add("hidden");
+        }
     }
 
     function openModelModalForProvider(providerKey) {
@@ -643,6 +699,7 @@
                 high_performance: document.getElementById("highTierSelect").value || null,
                 medium_performance: document.getElementById("mediumTierSelect").value || null,
                 low_performance: document.getElementById("lowTierSelect").value || null,
+                image_generation: document.getElementById("imageTierSelect").value || null,
             };
 
             await fetchJson("/api/model_tiers", {

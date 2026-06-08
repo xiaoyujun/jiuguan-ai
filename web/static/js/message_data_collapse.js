@@ -316,6 +316,62 @@ class MessageDataCollapseManager {
     }
 
     /**
+     * 行内排版处理：把角色扮演文本里的常见标记转成对应的语义标签。
+     *   **加粗**     -> <strong class="bubble-bold">
+     *   *斜体动作*   -> <em class="bubble-action">
+     *   "对话" / "对话" / 「对话」 / 『对话』 -> <span class="bubble-dialogue">
+     *
+     * 注意事项：
+     *   - 必须先做 ** 再做 *，否则 ** 会被 * 抢先匹配。
+     *   - 输入可能已经包含 <br> 等 HTML 标签，因此使用 split 把字符串切成
+     *     [text, tag, text, tag, ...]，只对文本部分跑正则，避免误伤 class
+     *     属性里的引号、< > 等字符。
+     *   - 幂等：若内容里已经存在我们注入的类名，直接原样返回；防止
+     *     processExistingMessages 在 100/500/1000ms 三次回扫时把
+     *     <span class="bubble-dialogue">"…"</span> 里属性值再吞一次，
+     *     生成 <span class=<span class="bubble-dialogue">"bubble-dialogue"</span>>
+     *     这样的畸形 HTML，进而在浏览器上暴露 "bubble-dialogue">…
+     * @param {string} content
+     * @returns {string}
+     */
+    applyInlineTypography(content) {
+        if (!content) return content;
+
+        // 幂等保护：已经处理过就不要再碰
+        if (/class="bubble-(bold|action|dialogue)"/.test(content)) {
+            return content;
+        }
+
+        // 把字符串按 HTML 标签拆开：偶数下标 = 文本，奇数下标 = 标签原样保留
+        const parts = content.split(/(<[^>]+>)/g);
+
+        for (let i = 0; i < parts.length; i++) {
+            if (i % 2 !== 0) continue; // 标签段，跳过
+
+            let chunk = parts[i];
+
+            // 1) **粗体** —— 非贪婪、不跨行、内部禁止 *
+            chunk = chunk.replace(/\*\*([^\*\n]+?)\*\*/g,
+                '<strong class="bubble-bold">$1</strong>');
+
+            // 2) *斜体动作* —— 两侧禁贴字母数字，避免误伤路径/通配符
+            chunk = chunk.replace(/(^|[^\w*])\*([^\*\n]+?)\*(?!\w)/g,
+                '$1<em class="bubble-action">$2</em>');
+
+            // 3) 对话引号高亮：半角"…"、全角"…"、「…」、『…』
+            chunk = chunk
+                .replace(/"([^"\n]+?)"/g, '<span class="bubble-dialogue">"$1"</span>')
+                .replace(/"([^"\n]+?)"/g, '<span class="bubble-dialogue">"$1"</span>')
+                .replace(/「([^」\n]+?)」/g, '<span class="bubble-dialogue">「$1」</span>')
+                .replace(/『([^』\n]+?)』/g, '<span class="bubble-dialogue">『$1』</span>');
+
+            parts[i] = chunk;
+        }
+
+        return parts.join('');
+    }
+
+    /**
      * 处理消息内容，识别并包装[]内容、折叠显示<>内容、隐藏$$内容
      * @param {string} content - 原始消息内容
      * @returns {string} - 处理后的HTML内容
@@ -324,7 +380,12 @@ class MessageDataCollapseManager {
         if (!content) return content;
         
         let processedContent = content;
-        
+
+        // 0. 先做轻量级排版处理：**粗体**、*斜体（动作/神态）*、"对话" 引号高亮
+        //    放在结构化处理（<>、[]、$$）之前，因为后续的 commandPattern
+        //    已经把 strong/em/span 等标签排除在外，能安全保留这些行内标签。
+        processedContent = this.applyInlineTypography(processedContent);
+
         // 1. 首先处理<>内容的折叠显示（不再执行命令，仅作为内容显示）
         // 排除HTML标签（如<br>、<span>等）
         const commandPattern = /<(?!\/?\s*(?:br|span|div|p|strong|em|b|i|u|a|img)\b[^>]*>)([^<>]*(?:\n[^<>]*)*?)>/g;
